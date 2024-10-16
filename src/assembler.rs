@@ -9,7 +9,7 @@ use asm::parser::{parse};
 
 fn main() -> io::Result<()> {
     let stdin = io::stdin();
-    let mut lines = stdin.lines().map(|l| l.unwrap());
+    let lines = stdin.lines().map(|l| l.unwrap());
     let tokens = lex(lines);
     
     // println!("{:?}", tokens);

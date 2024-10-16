@@ -1,12 +1,4 @@
 #[derive(Debug)]
-pub enum Radix {
-    Hex,
-    Dec,
-    Oct,
-    Bin
-}
-
-#[derive(Debug)]
 pub enum LState {
     NewLine,
     Identifier(Pos, String),
@@ -48,7 +40,7 @@ pub struct Token {
     pub token: TokenType
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum TokenType {
     Address,
     Identifier,
@@ -57,7 +49,8 @@ pub enum TokenType {
     Hash,
     LParen,
     RParen,
-    Comma,
+    CommaX,
+    CommaY,
     Hex,
     Bin,
     Oct
@@ -139,12 +132,27 @@ pub fn lex(input: impl Iterator<Item = String>) -> Vec<Token> {
                             col_i = col_i + 1;
                         }
                         Some(',') => {
-                            tokens.push(Token {
-                                token: TokenType::Comma,
-                                symbol: Symbol::new(line_i, col_i, String::from(','))
-                            });
-                            char = chars.next();
-                            col_i = col_i + 1;
+                            match chars.next() {
+                                Some(txt @ 'x') | Some(txt @ 'X') => {
+                                    tokens.push(Token {
+                                        token: TokenType::CommaX,
+                                        symbol: Symbol::new(line_i, col_i, format!(",{txt}"))
+                                    });
+                                    char = chars.next();
+                                    col_i = col_i + 2;
+                                }
+                                Some(txt @ 'y') | Some(txt @ 'Y') => {
+                                    tokens.push(Token {
+                                        token: TokenType::CommaY,
+                                        symbol: Symbol::new(line_i, col_i, format!(",{txt}"))
+                                    });
+                                    char = chars.next();
+                                    col_i = col_i + 2;
+                                }
+                                t => {
+                                    panic!("Invalid char at pos {line_i}:{col_i} '{}'", t.map_or(String::from("EOF"), |c| String::from(c)));
+                                }
+                            };
                         }
                         Some(curr_char) if curr_char.is_whitespace() => {
                             char = chars.next();
@@ -209,9 +217,9 @@ pub fn lex(input: impl Iterator<Item = String>) -> Vec<Token> {
                     });
                     state = LState::NewLine;
                 }
-                _ => {
-                    panic!("Not Implemented");
-                }
+                // _ => {
+                //     panic!("Not Implemented");
+                // }
             }
         }
     }
