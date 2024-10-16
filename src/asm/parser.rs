@@ -87,50 +87,38 @@ pub fn parse(tokens_vec: Vec<Token>) {
 
     let mut instructions: Vec<InterOpCode> = vec![];
 
-    let mut curr_token = tokens.next();
-    while let Some(token) = tokens.next() {
+    loop {
         match state {
             PState::Default => {
-                match token.token {
-                    TokenType::Identifier => {
-                        if let Some(ins) = Instruct::from_str(token.symbol.text.as_str()) {
-                            let ins_symbol = token.symbol;
-                            if tokens.peek().is_some_and(|t| t.token == TokenType::Identifier) {
-                                let token = tokens.peek().unwrap();
-                                if is_keyword(token.symbol.text.as_str()) {
-                                    instructions.push(InterOpCode {
-                                        symbol: ins_symbol,
-                                        instruct: ins,
-                                        addr: InterAddr::Addr(AddressType::Impl, None)
-                                    });
-                                } else {
-                                    let n_token = tokens.next().unwrap();
-                                    instructions.push(InterOpCode {
-                                        symbol: ins_symbol,
-                                        instruct: ins,
-                                        addr: InterAddr::Label(n_token.symbol)
-                                    });
-                                }
-                                state = PState::Default;
-                            } else {
+                let curr_token = tokens.next();
+                if let Some(token) = curr_token {
+                    match token.token {
+                        TokenType::Identifier => {
+                            if let Some(ins) = Instruct::from_str(token.symbol.text.as_str()) {
+                                let ins_symbol = token.symbol;
                                 state = PState::PostIntruction(ins_symbol, ins);
+                            } else if token.symbol.text.to_lowercase() == "define" {
+                                todo!("define statement");
+                            } else if tokens.next_if(|t| t.token == TokenType::Colon).is_some() {
+                                labels.insert(token.symbol.text.to_lowercase(), instructions.len());
+                            } else {
+                                panic!("Unknown instruction or invalid token: {token:?}");
                             }
-                        } else if token.symbol.text.to_lowercase() == "define" {
-                            todo!("define statement");
-                        } else if tokens.peek().is_some_and(|t| t.token == TokenType::Colon) {
-                            tokens.next();
-                            labels.insert(token.symbol.text.to_lowercase(), instructions.len());
+                        }
+                        _ => {
+                            panic!("Invalid Token: {instructions:?}");
+                            panic!("Invalid Token: {token:?}");
                         }
                     }
-                    _ => {
-                        println!("{instructions:?}");
-                        panic!("Invalid Token: {token:?}");
-                    }
+                } else {
+                    break;
                 }
             }
             PState::PostIntruction(ins_symbol, ins) => {
-                match token.token {
-                    TokenType::Hash => {
+                let curr_token = tokens.peek();
+                match curr_token {
+                    Some(Token {token: TokenType::Hash, ..}) => {
+                        tokens.next();
                         let mut token = tokens.next().expect("Expected number, found EOF");
                         let radix = match token.token {
                             TokenType::Bin => {
@@ -162,7 +150,9 @@ pub fn parse(tokens_vec: Vec<Token>) {
                         });
                         state = PState::Default;
                     },
-                    TokenType::Bin | TokenType::Hex | TokenType::Oct => {
+
+                    Some(Token {token: TokenType::Bin | TokenType::Hex | TokenType::Oct, ..}) => {
+                        let token = tokens.next().unwrap();
                         let radix = match token.token {
                             TokenType::Bin => Radix::Bin,
                             TokenType::Oct => Radix::Oct,
@@ -177,12 +167,38 @@ pub fn parse(tokens_vec: Vec<Token>) {
                             parse_number(token, radix)
                         );
                     },
-                    TokenType::Number => {
+                    Some(Token {token: TokenType::Number, ..}) => {
+                        let token = tokens.next().unwrap();
                         state = PState::PostNumber(
                             ins_symbol,
                             ins,
                             parse_number(token, Radix::Dec)
                         );
+                    },
+                    Some(token @ Token {token: TokenType::Identifier, ..}) => {
+                        if is_keyword(token.symbol.text.as_str()) {
+                            instructions.push(InterOpCode {
+                                symbol: ins_symbol,
+                                instruct: ins,
+                                addr: InterAddr::Addr(AddressType::Impl, None)
+                            });
+                        } else {
+                            let token = tokens.next().unwrap();
+                            instructions.push(InterOpCode {
+                                symbol: ins_symbol,
+                                instruct: ins,
+                                addr: InterAddr::Label(token.symbol)
+                            });
+                        }
+                        state = PState::Default;
+                    }
+                    None => {
+                        instructions.push(InterOpCode {
+                            symbol: ins_symbol,
+                            instruct: ins,
+                            addr: InterAddr::Addr(AddressType::Impl, None)
+                        });
+                        state = PState::Default;
                     }
                     _ => {
                         unimplemented!();
@@ -190,45 +206,54 @@ pub fn parse(tokens_vec: Vec<Token>) {
                 }
             }
             PState::PostNumber(ins_symbol, ins, value) => {
-                let next = tokens.peek();
-                if let Some(next_token) = next {
-                    match next_token.token {
-                        TokenType::CommaX => {
-                            instructions.push(InterOpCode {
-                                symbol: ins_symbol,
-                                instruct: ins,
-                                addr: InterAddr::Addr(if value.long {AddressType::AbsoluteX} else {AddressType::ZeroPageX}, Some(value))
-                            });
-                            tokens.next();
-                        }
-                        TokenType::CommaY => {
-                            instructions.push(InterOpCode {
-                                symbol: ins_symbol,
-                                instruct: ins,
-                                addr: InterAddr::Addr(if value.long {AddressType::AbsoluteY} else {AddressType::ZeroPageY}, Some(value))
-                            });
-                            tokens.next();
-                        },
-                        _ => {
-                            instructions.push(InterOpCode {
-                                symbol: ins_symbol,
-                                instruct: ins,
-                                addr: InterAddr::Addr(if value.long {AddressType::Absolute} else {AddressType::ZeroPage}, Some(value))
-                            });
-                        }
+                let curr_token = tokens.peek();
+                match curr_token {
+                    Some(Token {token: TokenType::CommaX, ..}) => {
+                        instructions.push(InterOpCode {
+                            symbol: ins_symbol,
+                            instruct: ins,
+                            addr: InterAddr::Addr(if value.long {AddressType::AbsoluteX} else {AddressType::ZeroPageX}, Some(value))
+                        });
+                        tokens.next();
                     }
-                    state = PState::Default;
-                } else {
-                    instructions.push(InterOpCode {
-                        symbol: ins_symbol,
-                        instruct: ins,
-                        addr: InterAddr::Addr(if value.long {AddressType::Absolute} else {AddressType::ZeroPage}, Some(value))
-                    });
-                    state = PState::Default;
-                }
+                    Some(Token {token: TokenType::CommaY, ..}) => {
+                        instructions.push(InterOpCode {
+                            symbol: ins_symbol,
+                            instruct: ins,
+                            addr: InterAddr::Addr(if value.long {AddressType::AbsoluteY} else {AddressType::ZeroPageY}, Some(value))
+                        });
+                        tokens.next();
+                    },
+                    _ => {
+                        instructions.push(InterOpCode {
+                            symbol: ins_symbol,
+                            instruct: ins,
+                            addr: InterAddr::Addr(if value.long {AddressType::Absolute} else {AddressType::ZeroPage}, Some(value))
+                        });
+                    }
+                } 
+                state = PState::Default;
             }
         }
     }
 
-    println!("{instructions:?}");
+    print_instructions(&instructions);
+
+    for op in instructions {
+        match op.addr {
+            InterAddr::Label(label) => {
+                let 
+            }
+        }
+    }
+}
+
+fn print_instructions(instructions: &Vec<InterOpCode>) {
+    for op in instructions {
+        println!("{:?} => {}", op.instruct, match &op.addr {
+            InterAddr::Label(s) => format!("Label({:?})", &s.text),
+            s @ InterAddr::Addr(_, None) => format!("{:?}", &s),
+            InterAddr::Addr(addr, Some(val)) => format!("Addr({:?}, {:?})", &addr, (&val.symbol.text, &val.value)),
+        });
+    }
 }
