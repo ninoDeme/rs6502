@@ -1,11 +1,11 @@
 use crate::asm::lexer::{Token, TokenType, Symbol};
-use crate::asm::{Instruct, AddressType};
+use crate::asm::{Instruct, AddressType, AsmError};
 use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct OpCode {
-    code: u8,
-    addr: Vec<u8>
+    pub code: u8,
+    pub addr: Vec<u8>
 }
 
 #[derive(Debug)]
@@ -56,31 +56,33 @@ fn is_keyword(text: &str) -> bool {
     return text == "define" || Instruct::from_str(text).is_some();
 }
 
-fn parse_number(token: Token, radix: Radix) -> Value {
+fn parse_number(token: Token, radix: Radix) -> Result<Value, AsmError> {
     if token.token != TokenType::Number {
-        panic!("Expected number, found {token:?}");
+        return Err(AsmError::new(&format!("Expected number, found {}", token.symbol.text), Some(token.symbol)))
     };
-    let value = i32::from_str_radix(token.symbol.text.as_str(), match radix {
+    let value = match i32::from_str_radix(token.symbol.text.as_str(), match radix {
         Radix::Bin => 2,
         Radix::Oct => 8,
         Radix::Dec => 10,
         Radix::Hex => 16,
-    }).expect(format!("{} is not a valid number", token.symbol.text).as_str());
+    }) {
+        Ok(res) => res,
+        Err(_) => return Err(AsmError::new(format!("{} is not a valid number", token.symbol.text).as_str(), Some(token.symbol)))
+    };
     let is16bit = value > 255 || token.symbol.text.chars().count() > match radix {
         Radix::Bin => 8,
         Radix::Oct => 4,
         Radix::Dec => 3,
         Radix::Hex => 2,
     };
-    return Value {
+    return Ok(Value {
         long: is16bit,
         symbol: token.symbol,
         value
-    }
+    })
 }
 
-pub fn parse(tokens_vec: Vec<Token>) {
-    // println!("{:?}", tokens);
+pub fn parse(tokens_vec: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
     let mut tokens = tokens_vec.into_iter().peekable();
     let mut labels = HashMap::new();
     let mut state = PState::Default;
@@ -102,12 +104,11 @@ pub fn parse(tokens_vec: Vec<Token>) {
                             } else if tokens.next_if(|t| t.token == TokenType::Colon).is_some() {
                                 labels.insert(token.symbol.text.to_lowercase(), instructions.len());
                             } else {
-                                panic!("Unknown instruction or invalid token: {token:?}");
+                                return Err(AsmError::new("Unknown instruction or invalid token", Some(token.symbol)))
                             }
                         }
                         _ => {
-                            panic!("Invalid Token: {instructions:?}");
-                            panic!("Invalid Token: {token:?}");
+                            return Err(AsmError::new("Invalid token", Some(token.symbol)))
                         }
                     }
                 } else {
@@ -118,11 +119,11 @@ pub fn parse(tokens_vec: Vec<Token>) {
                 let curr_token = tokens.peek();
                 match curr_token {
                     Some(Token {token: TokenType::Hash, ..}) => {
-                        tokens.next();
-                        let mut token = tokens.next().expect("Expected number, found EOF");
+                        let mut token = tokens.next().unwrap();
+                        token = tokens.next().ok_or(AsmError::new("Expected number, found EOF", Some(token.symbol)))?;
                         let radix = match token.token {
                             TokenType::Bin => {
-                                token = tokens.next().expect("Expected number, found EOF");
+                                token = tokens.next().unwrap();
                                 Radix::Bin
                             },
                             TokenType::Oct => {
@@ -139,9 +140,9 @@ pub fn parse(tokens_vec: Vec<Token>) {
                             _ => unreachable!()
                         };
 
-                        let value = parse_number(token, radix);
+                        let value = parse_number(token, radix)?;
                         if value.long {
-                            panic!("number can't be bigger than 8 bits");
+                            return Err(AsmError::new("number can't be bigger than 8 bits", Some(value.symbol)))
                         }
                         instructions.push(InterOpCode {
                             symbol: ins_symbol,
@@ -150,7 +151,63 @@ pub fn parse(tokens_vec: Vec<Token>) {
                         });
                         state = PState::Default;
                     },
+                    Some(Token {token: TokenType::LParen, ..}) => {
+                        let mut token = tokens.next().unwrap();
+                        token = tokens.next().ok_or(AsmError::new("Expected number, found EOF", Some(token.symbol)))?;
+                        let radix = match token.token {
+                            TokenType::Bin => {
+                                token = tokens.next().unwrap();
+                                Radix::Bin
+                            },
+                            TokenType::Oct => {
+                                token = tokens.next().expect("Expected number, found EOF");
+                                Radix::Oct
+                            },
+                            TokenType::Hex => {
+                                token = tokens.next().expect("Expected number, found EOF");
+                                Radix::Hex
+                            },
+                            TokenType::Number => {
+                                Radix::Dec
+                            },
+                            _ => unreachable!()
+                        };
 
+                        let value = parse_number(token, radix)?;
+                        token = tokens.next().ok_or(AsmError::new("Early EOF", None))?;
+                        match token.token {
+                            TokenType::RParen => {
+                                if let Some(Token {token: TokenType::CommaY, ..}) = tokens.peek() {
+                                    tokens.next();
+                                    instructions.push(InterOpCode {
+                                        symbol: ins_symbol,
+                                        instruct: ins,
+                                        addr: InterAddr::Addr(AddressType::IndirectY, Some(value))
+                                    });
+                                } else {
+                                    instructions.push(InterOpCode {
+                                        symbol: ins_symbol,
+                                        instruct: ins,
+                                        addr: InterAddr::Addr(AddressType::Indirect, Some(value))
+                                    });
+                                }
+                            }
+                            TokenType::CommaX => {
+                                token = tokens.next().ok_or(AsmError::new("Early EOF", None))?;
+                                if let TokenType::RParen = token.token {
+                                    instructions.push(InterOpCode {
+                                        symbol: ins_symbol,
+                                        instruct: ins,
+                                        addr: InterAddr::Addr(AddressType::IndirectX, Some(value))
+                                    });
+                                } else {
+                                    return Err(AsmError::new("Unexpected Token", Some(token.symbol)))
+                                }
+                            },
+                            _ => return Err(AsmError::new("Unexpected Token", Some(token.symbol)))
+                        }
+                        state = PState::Default;
+                    },
                     Some(Token {token: TokenType::Bin | TokenType::Hex | TokenType::Oct, ..}) => {
                         let token = tokens.next().unwrap();
                         let radix = match token.token {
@@ -160,11 +217,11 @@ pub fn parse(tokens_vec: Vec<Token>) {
                             _ => unreachable!()
                         };
 
-                        let token = tokens.next().expect("Expected number, found EOF");
+                        let token = tokens.next().ok_or(AsmError::new("Expected number, found EOF", Some(token.symbol)))?;
                         state = PState::PostNumber(
                             ins_symbol,
                             ins,
-                            parse_number(token, radix)
+                            parse_number(token, radix)?
                         );
                     },
                     Some(Token {token: TokenType::Number, ..}) => {
@@ -172,7 +229,7 @@ pub fn parse(tokens_vec: Vec<Token>) {
                         state = PState::PostNumber(
                             ins_symbol,
                             ins,
-                            parse_number(token, Radix::Dec)
+                            parse_number(token, Radix::Dec)?
                         );
                     },
                     Some(token @ Token {token: TokenType::Identifier, ..}) => {
@@ -237,15 +294,100 @@ pub fn parse(tokens_vec: Vec<Token>) {
         }
     }
 
-    print_instructions(&instructions);
+    // print_instructions(&instructions);
 
-    for op in instructions {
+    let mut result: Vec<OpCode> = vec![];
+    for item in instructions.into_iter().enumerate() {
+        let (location, op) = item;
         match op.addr {
             InterAddr::Label(label) => {
-                let 
-            }
-        }
-    }
+                let op_addr = labels.get(&label.text).expect(&format!("Undefined label: {label:?}")).clone();
+                if let Some(op_code) = op.instruct.get_op_code(&AddressType::Absolute) {
+                    if op_addr > u16::MAX as usize {
+                        panic!("Absolute address doesnt fit in u16: {op_addr} ({label:?})");
+                    }
+                    let full_addr = op_addr as u16;
+                    let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
+                    let high: u8 = (full_addr & 0x00FF) as u8;
+                    result.push(OpCode {
+                        code: op_code,
+                        addr: vec![high, low]
+                    })
+                } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Relative) {
+                    let diff = location - op_addr;
+                    result.push(OpCode {
+                        code: op_code,
+                        addr: vec![i8::try_from(diff).expect(&format!("Relative address doesnt fit in i8: {diff} ({label:?})")) as u8]
+                    })
+                } else {
+                    return Err(AsmError::new("Instruction doesn't allow this type of addressing", Some(op.symbol)));
+                }
+            },
+            InterAddr::Addr(addr, value) => {
+                match addr {
+                    AddressType::Immediate |
+                    AddressType::IndirectX | AddressType::IndirectY |
+                    AddressType::ZeroPage | AddressType::ZeroPageX | AddressType::ZeroPageY => {
+                        if let Some(value) = value {
+                            let op_code = match op.instruct.get_op_code(&addr) {
+                                Some(val) => val,
+                                None => return Err(AsmError::new(&format!("Invalid addres type for instruction {}", op.symbol.text), Some(value.symbol)))
+                            };
+                            result.push(OpCode {
+                                code: op_code,
+                                addr: vec![value.value as u8]
+                            });
+                        } else {
+                            return Err(AsmError::new("Missing value", Some(op.symbol)))
+                        }
+                    },
+                    AddressType::Impl | AddressType::Accumulator => {
+                        if let Some(value) = value {
+                            return Err(AsmError::new("Unexpected value", Some(value.symbol)))
+                        } else {
+                            if let Some(op_code) = op.instruct.get_op_code(&AddressType::Impl) {
+                                result.push(OpCode {
+                                    code: op_code,
+                                    addr: vec![]
+                                });
+                            } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Accumulator) {
+                                result.push(OpCode {
+                                    code: op_code,
+                                    addr: vec![]
+                                });
+                            } else {
+                                return Err(AsmError::new(&format!("Instruction \"{:?}\" needs an address", op.instruct), Some(op.symbol)))
+                            }
+                        }
+                    },
+                    AddressType::Indirect |
+                    AddressType::Absolute | AddressType::AbsoluteX | AddressType::AbsoluteY => {
+                        if let Some(value) = value {
+                            let op_code = match op.instruct.get_op_code(&addr) {
+                                Some(val) => val,
+                                None => return Err(AsmError::new(&format!("Invalid addres type for instruction {}", op.symbol.text), Some(value.symbol)))
+                            };
+                            let op_addr = value.value;
+                            if op_addr > u16::MAX as i32 {
+                                panic!("Absolute address doesnt fit in u16: {op_addr}");
+                            }
+                            let full_addr = op_addr as u16;
+                            let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
+                            let high: u8 = (full_addr & 0x00FF) as u8;
+                            result.push(OpCode {
+                                code: op_code,
+                                addr: vec![high, low]
+                            })
+                        } else {
+                            return Err(AsmError::new("Missing value", Some(op.symbol)))
+                        }
+                    },
+                    _ => unimplemented!("{:?}", addr),
+                };
+            },
+        };
+    };
+    return Ok(result)
 }
 
 fn print_instructions(instructions: &Vec<InterOpCode>) {

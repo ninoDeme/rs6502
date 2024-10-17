@@ -1,0 +1,1794 @@
+[
+  {
+    "name": "BRK",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 7,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ORA",
+    "address_mode": "indx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ORA",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ASL",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "PHP",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ORA",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ASL",
+    "address_mode": "accum",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ORA",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ASL",
+    "address_mode": "abs",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BPL",
+    "address_mode": "relative",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 2
+  },
+  {
+    "name": "ORA",
+    "address_mode": "indy",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ORA",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ASL",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CLC",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ORA",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ORA",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ASL",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 7,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "JSR",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "AND",
+    "address_mode": "indx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BIT",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "AND",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ROL",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "PLP",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "AND",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ROL",
+    "address_mode": "accum",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BIT",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "AND",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ROL",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BMI",
+    "address_mode": "relative",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 2
+  },
+  {
+    "name": "AND",
+    "address_mode": "indy",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "AND",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ROL",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SEC",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "AND",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "AND",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ROL",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 7,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "RTI",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "EOR",
+    "address_mode": "indx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "EOR",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LSR",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "PHA",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "EOR",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LSR",
+    "address_mode": "accum",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "JMP",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "EOR",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LSR",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BVC",
+    "address_mode": "relative",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 2
+  },
+  {
+    "name": "EOR",
+    "address_mode": "indy",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "EOR",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LSR",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CLI",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "EOR",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "EOR",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "LSR",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 7,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "RTS",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ADC",
+    "address_mode": "indx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ADC",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ROR",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "PLA",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ADC",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ROR",
+    "address_mode": "accum",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "JMP",
+    "address_mode": "ind",
+    "instruction_bytes": 3,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ADC",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ROR",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BVS",
+    "address_mode": "relative",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 2
+  },
+  {
+    "name": "ADC",
+    "address_mode": "indy",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ADC",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ROR",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SEI",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ADC",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ADC",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ROR",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 7,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STA",
+    "address_mode": "indx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STY",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STA",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STX",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "DEY",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "TXA",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STY",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STA",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STX",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BCC",
+    "address_mode": "relative",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 2
+  },
+  {
+    "name": "STA",
+    "address_mode": "indy",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STY",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STA",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STX",
+    "address_mode": "zpy",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "TYA",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STA",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "TXS",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "STA",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDY",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDA",
+    "address_mode": "indx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDX",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDY",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDA",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDX",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "TAY",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDA",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "TAX",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDY",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDA",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDX",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BCS",
+    "address_mode": "relative",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 2
+  },
+  {
+    "name": "LDA",
+    "address_mode": "indy",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDY",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDA",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDX",
+    "address_mode": "zpy",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CLV",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDA",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "TSX",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "LDY",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "LDA",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "LDX",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CPY",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CMP",
+    "address_mode": "indx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CPY",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CMP",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "DEC",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "INY",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CMP",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "DEX",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CPY",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CMP",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "DEC",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BNE",
+    "address_mode": "relative",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 2
+  },
+  {
+    "name": "CMP",
+    "address_mode": "indy",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CMP",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "DEC",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CLD",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CMP",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CMP",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "DEC",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 7,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CPX",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SBC",
+    "address_mode": "indx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CPX",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SBC",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 3,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "INC",
+    "address_mode": "zp",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "INX",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SBC",
+    "address_mode": "imm",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "NOP",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "CPX",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SBC",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "INC",
+    "address_mode": "abs",
+    "instruction_bytes": 3,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "BEQ",
+    "address_mode": "relative",
+    "instruction_bytes": 2,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 2
+  },
+  {
+    "name": "SBC",
+    "address_mode": "indy",
+    "instruction_bytes": 2,
+    "machine_cycles": 5,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SBC",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "INC",
+    "address_mode": "zpx",
+    "instruction_bytes": 2,
+    "machine_cycles": 6,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SED",
+    "address_mode": "implied",
+    "instruction_bytes": 1,
+    "machine_cycles": 2,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SBC",
+    "address_mode": "absy",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "SBC",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 4,
+    "extra_cycles_possible": 1
+  },
+  {
+    "name": "INC",
+    "address_mode": "absx",
+    "instruction_bytes": 3,
+    "machine_cycles": 7,
+    "extra_cycles_possible": 0
+  },
+  {
+    "name": "ILLEGAL",
+    "address_mode": "ILLEGAL",
+    "instruction_bytes": 0,
+    "machine_cycles": 0,
+    "extra_cycles_possible": 0
+  }
+]
