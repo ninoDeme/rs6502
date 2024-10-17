@@ -1,7 +1,8 @@
 pub mod lexer;
 pub mod parser;
-use crate::asm::lexer::Symbol;
 
+
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug)]
 pub enum Instruct {
     ADC, // add with carry
@@ -476,15 +477,43 @@ impl Instruct {
                 AddressType::Impl => Some(0x98),
                 _ => None,
             },
-            _ => unimplemented!()
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Pos {
+    pub line: usize,
+    pub col: usize
+}
+
+#[derive(Debug)]
+pub struct Symbol {
+    pub start: Pos,
+    pub end: Pos,
+    pub text: String
+}
+
+impl Symbol {
+    pub fn new(line: usize, col: usize, text: String) -> Symbol {
+        Symbol {
+            start: Pos {
+                line,
+                col
+            },
+            end: Pos {
+                line,
+                col: col + text.chars().count()
+            },
+            text
         }
     }
 }
 
 #[derive(Debug)]
 pub struct AsmError {
-    symbol: Option<Symbol>,
-    reason: String
+    pub symbol: Option<Symbol>,
+    pub reason: String
 }
 
 impl AsmError {

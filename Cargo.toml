@@ -8,3 +8,7 @@ edition = "2021"
 [[bin]]
 name = "rs6502asm"
 path = "src/assembler.rs"
+
+[lints.clippy]
+needless_return = "allow"
+

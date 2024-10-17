@@ -1,5 +1,5 @@
-use crate::asm::lexer::{Token, TokenType, Symbol};
-use crate::asm::{Instruct, AddressType, AsmError};
+use crate::asm::lexer::{Token, TokenType};
+use crate::asm::{Instruct, AddressType, AsmError, Symbol};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -301,10 +301,13 @@ pub fn parse(tokens_vec: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
         let (location, op) = item;
         match op.addr {
             InterAddr::Label(label) => {
-                let op_addr = labels.get(&label.text).expect(&format!("Undefined label: {label:?}")).clone();
+                let op_addr = match labels.get(&label.text) {
+                    Some(x) => Ok(*x),
+                    None => Err(AsmError::new(&format!("Undefined label: {label:?}"), None))
+                }?;
                 if let Some(op_code) = op.instruct.get_op_code(&AddressType::Absolute) {
                     if op_addr > u16::MAX as usize {
-                        panic!("Absolute address doesnt fit in u16: {op_addr} ({label:?})");
+                        return Err(AsmError::new(&format!("Absolute address doesnt fit in u16: {op_addr}"), Some(label)))
                     }
                     let full_addr = op_addr as u16;
                     let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
@@ -317,7 +320,10 @@ pub fn parse(tokens_vec: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
                     let diff = location - op_addr;
                     result.push(OpCode {
                         code: op_code,
-                        addr: vec![i8::try_from(diff).expect(&format!("Relative address doesnt fit in i8: {diff} ({label:?})")) as u8]
+                        addr: vec![match i8::try_from(diff) {
+                            Ok(val) => val as u8,
+                            Err(_) => return Err(AsmError::new(&format!("Relative address doesnt fit in i8: {diff}"), Some(label)))
+                        }]
                     })
                 } else {
                     return Err(AsmError::new("Instruction doesn't allow this type of addressing", Some(op.symbol)));
@@ -344,20 +350,18 @@ pub fn parse(tokens_vec: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
                     AddressType::Impl | AddressType::Accumulator => {
                         if let Some(value) = value {
                             return Err(AsmError::new("Unexpected value", Some(value.symbol)))
+                        } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Impl) {
+                            result.push(OpCode {
+                                code: op_code,
+                                addr: vec![]
+                            });
+                        } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Accumulator) {
+                            result.push(OpCode {
+                                code: op_code,
+                                addr: vec![]
+                            });
                         } else {
-                            if let Some(op_code) = op.instruct.get_op_code(&AddressType::Impl) {
-                                result.push(OpCode {
-                                    code: op_code,
-                                    addr: vec![]
-                                });
-                            } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Accumulator) {
-                                result.push(OpCode {
-                                    code: op_code,
-                                    addr: vec![]
-                                });
-                            } else {
-                                return Err(AsmError::new(&format!("Instruction \"{:?}\" needs an address", op.instruct), Some(op.symbol)))
-                            }
+                            return Err(AsmError::new(&format!("Instruction \"{:?}\" needs an address", op.instruct), Some(op.symbol)))
                         }
                     },
                     AddressType::Indirect |
