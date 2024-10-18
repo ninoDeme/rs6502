@@ -481,13 +481,13 @@ impl Instruct {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Pos {
     pub line: usize,
     pub col: usize
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Symbol {
     pub start: Pos,
     pub end: Pos,

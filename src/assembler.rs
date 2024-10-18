@@ -1,19 +1,9 @@
-
-
 use std::io;
 
 mod asm;
 
 use asm::lexer::{lex};
 use asm::parser::{parse};
-
-const CHARS: [char; 16] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
-
-fn to_hex(num: u8) -> String {
-    let low: char = CHARS[(num & 0x0F) as usize];
-    let high: char = CHARS[((num & 0xF0) >> 4) as usize];
-    return format!("{high}{low}");
-}
 
 fn main() -> io::Result<()> {
     let stdin = io::stdin();
@@ -24,16 +14,19 @@ fn main() -> io::Result<()> {
     let res = parse(tokens);
     match res {
         Ok(value) => {
-            let mut first = false;
+            let mut i = 0;
             for op in value {
-                if !first {
-                    first = true;
-                } else {
-                    print!(" ");
+                if i % 16 == 0 {
+                    print!("\n 0x{:04x}: ", i + 0x0600);
                 }
-                print!("{}", to_hex(op.code));
+                i += 1;
+                print!("{:02x} ", op.code);
                 for arg in op.addr {
-                    print!(" {}", to_hex(arg));
+                    if i % 16 == 0 {
+                        print!("\n 0x{:04x}: ", i + 0x0600);
+                    }
+                    i += 1;
+                    print!("{:02x} ", arg);
                 }
             }
         },

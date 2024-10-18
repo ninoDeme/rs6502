@@ -2,18 +2,18 @@ use crate::asm::{Symbol, Pos};
 
 #[derive(Debug)]
 pub enum LState {
-    NewLine,
+    Default,
     Identifier(Pos, String),
     Number(Pos, String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub symbol: Symbol,
     pub token: TokenType
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
     Identifier,
     Colon,
@@ -25,15 +25,31 @@ pub enum TokenType {
     CommaY,
     Hex,
     Bin,
-    Oct
+    Oct,
+    NewLine
 }
 
 pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
-    let lines = input.enumerate().map(|(i, l)| (i + 1, l));
+    let lines = input.enumerate().map(|(i, l)| (i + 1, l)).peekable();
     let mut tokens: Vec<Token> = vec![];
 
+    tokens.push(Token {
+        token: TokenType::NewLine,
+        symbol: Symbol {
+            start: Pos {
+                line: 0,
+                col: 0
+            },
+            end: Pos {
+                line: 0,
+                col: 0
+            },
+            text: String::from("\n")
+        }
+    });
+
     for (line_i, line) in lines {
-        let mut state = LState::NewLine;
+        let mut state = LState::Default;
         let mut chars = line.chars();
         let mut col_i = 1;
         let mut char = chars.next();
@@ -42,7 +58,7 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                 char = None;
             }
             match state {
-                LState::NewLine => {
+                LState::Default => {
                     match char {
                         Some(':') => {
                             tokens.push(Token {
@@ -135,7 +151,7 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                             char = chars.next();
                             col_i += 1;
                         }
-                        Some(curr_char) if curr_char.is_ascii_alphabetic() => {
+                        Some(curr_char @ ('a'..='z' | 'A'..='Z' | '_')) => {
                             state = LState::Identifier(Pos { line: line_i, col: col_i }, String::from(curr_char));
                             char = chars.next();
                             col_i += 1;
@@ -148,7 +164,7 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                         }
                     }
                 }
-                LState::Identifier(_, ref mut text) if char.is_some_and(|c| c.is_ascii_alphanumeric()) => {
+                LState::Identifier(_, ref mut text) if matches!(char, Some('a'..='z' | 'A'..='Z' | '_' | '0'..='9')) => {
                     text.push(char.unwrap());
                     char = chars.next();
                     col_i += 1;
@@ -165,7 +181,7 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                             text: text.to_string()
                         }
                     });
-                    state = LState::NewLine;
+                    state = LState::Default;
                 }
                 LState::Number(_, ref mut text) if char.is_some_and(|c| c.is_ascii_alphanumeric()) => {
                     text.push(char.unwrap());
@@ -187,13 +203,28 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                             text: text.to_string()
                         }
                     });
-                    state = LState::NewLine;
+                    state = LState::Default;
                 }
                 // _ => {
                 //     panic!("Not Implemented");
                 // }
             }
-        }
+        };
+
+        tokens.push(Token {
+            token: TokenType::NewLine,
+            symbol: Symbol {
+                start: Pos {
+                    line: line_i,
+                    col: col_i
+                },
+                end: Pos {
+                    line: line_i + 1,
+                    col: col_i
+                },
+                text: String::from("\n")
+            }
+        });
     }
     return tokens;
 }
