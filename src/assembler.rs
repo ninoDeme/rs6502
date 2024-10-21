@@ -17,17 +17,10 @@ fn main() -> io::Result<()> {
             let mut i = 0;
             for op in value {
                 if i % 16 == 0 {
-                    print!("\n 0x{:04x}: ", i + 0x0600);
+                    print!("\n {:04x}: ", i + 0x0600);
                 }
                 i += 1;
-                print!("{:02x} ", op.code);
-                for arg in op.addr {
-                    if i % 16 == 0 {
-                        print!("\n 0x{:04x}: ", i + 0x0600);
-                    }
-                    i += 1;
-                    print!("{:02x} ", arg);
-                }
+                print!("{:02x} ", op);
             }
         },
         Err(error) => {

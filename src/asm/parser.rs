@@ -3,12 +3,6 @@ use crate::asm::{Instruct, AddressType, AsmError, Symbol};
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct OpCode {
-    pub code: u8,
-    pub addr: Vec<u8>
-}
-
-#[derive(Debug)]
 enum InterAddr {
     Addr(AddressType, Option<Value>),
     Label(Symbol)
@@ -54,7 +48,7 @@ enum PState {
 }
 
 fn is_keyword(text: &str) -> bool {
-    return text == "define" || Instruct::from_str(text).is_some();
+    return &text.to_lowercase() == "define" || Instruct::from_str(text).is_some();
 }
 
 fn throw_newline(token: Option<Token>) -> Result<Token, AsmError> {
@@ -150,7 +144,7 @@ pub fn extend_tokens(tokens: Vec<Token>) -> Result<Vec<Token>, AsmError> {
 
 const ENTRY_POINT: u16 = 0x0600;
 
-pub fn parse(tokens: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
+pub fn parse(tokens: Vec<Token>) -> Result<Vec<u8>, AsmError> {
     let mut tokens = extend_tokens(tokens)?.into_iter().peekable();
     let mut labels: HashMap<String, u16> = HashMap::new();
     let mut state = PState::Default;
@@ -423,9 +417,9 @@ pub fn parse(tokens: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
 
     // print_instructions(&instructions);
 
-    let mut result: Vec<OpCode> = vec![];
+    let mut result: Vec<u8> = vec![];
     for op in instructions.into_iter() {
-        let parsed_op = match op.addr {
+        match op.addr {
             InterAddr::Label(label) => {
                 let label_addr = match labels.get(&label.text) {
                     Some(x) => Ok(*x),
@@ -438,19 +432,14 @@ pub fn parse(tokens: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
                     let full_addr = label_addr;
                     let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
                     let high: u8 = (full_addr & 0x00FF) as u8;
-                    OpCode {
-                        code: op_code,
-                        addr: vec![high, low]
-                    }
+                    result.extend_from_slice(&[op_code, high, low]);
                 } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Relative) {
                     let diff = (label_addr as i32) - (op.ins_addr as i32) - 2;
-                    OpCode {
-                        code: op_code,
-                        addr: vec![match i8::try_from(diff) {
-                            Ok(val) => val as u8,
-                            Err(_) => return Err(AsmError::new(&format!("Relative address doesnt fit in i8: {diff}"), Some(label)))
-                        }]
-                    }
+                    let addr = match i8::try_from(diff) {
+                        Ok(val) => val as u8,
+                        Err(_) => return Err(AsmError::new(&format!("Relative address doesnt fit in i8: {diff}"), Some(label)))
+                    };
+                    result.extend_from_slice(&[op_code, addr]);
                 } else {
                     return Err(AsmError::new("Instruction doesn't allow this type of addressing", Some(op.symbol)));
                 }
@@ -465,10 +454,7 @@ pub fn parse(tokens: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
                                 Some(val) => val,
                                 None => return Err(AsmError::new(&format!("Invalid addres type for instruction {}", op.symbol.text), Some(value.symbol)))
                             };
-                            OpCode {
-                                code: op_code,
-                                addr: vec![value.value as u8]
-                            }
+                            result.extend_from_slice(&[op_code, value.value as u8]);
                         } else {
                             return Err(AsmError::new("Missing value", Some(op.symbol)))
                         }
@@ -477,15 +463,9 @@ pub fn parse(tokens: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
                         if let Some(value) = value {
                             return Err(AsmError::new("Unexpected value", Some(value.symbol)))
                         } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Impl) {
-                            OpCode {
-                                code: op_code,
-                                addr: vec![]
-                            }
+                            result.extend_from_slice(&[op_code]);
                         } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Accumulator) {
-                            OpCode {
-                                code: op_code,
-                                addr: vec![]
-                            }
+                            result.extend_from_slice(&[op_code]);
                         } else {
                             return Err(AsmError::new(&format!("Instruction \"{:?}\" needs an address", op.instruct), Some(op.symbol)))
                         }
@@ -504,10 +484,7 @@ pub fn parse(tokens: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
                             let full_addr = op_addr as u16;
                             let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
                             let high: u8 = (full_addr & 0x00FF) as u8;
-                            OpCode {
-                                code: op_code,
-                                addr: vec![high, low]
-                            }
+                            result.extend_from_slice(&[op_code, high, low]);
                         } else {
                             return Err(AsmError::new("Missing value", Some(op.symbol)))
                         }
@@ -516,18 +493,6 @@ pub fn parse(tokens: Vec<Token>) -> Result<Vec<OpCode>, AsmError> {
                 }
             },
         };
-        result.push(parsed_op);
     };
     return Ok(result)
 }
-
-fn print_instructions(instructions: &Vec<InterOpCode>) {
-    for op in instructions {
-        println!("{:?} => {}", op.instruct, match &op.addr {
-            InterAddr::Label(s) => format!("Label({:?})", &s.text),
-            InterAddr::Addr(addr, Some(val)) => format!("0x{:04x}: Addr({:?}, {:?})", op.ins_addr, &addr, (&val.symbol.text, &val.value)),
-            InterAddr::Addr(addr, None) => format!("0x{:04x}: Addr({:?}, None)", op.ins_addr, &addr),
-        });
-    }
-}
-
