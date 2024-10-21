@@ -1,6 +1,7 @@
 use std::io;
 
 mod asm;
+mod instruct;
 
 use asm::lexer::{lex};
 use asm::parser::{parse};

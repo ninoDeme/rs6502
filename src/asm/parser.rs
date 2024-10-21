@@ -1,5 +1,6 @@
 use crate::asm::lexer::{Token, TokenType};
-use crate::asm::{Instruct, AddressType, AsmError, Symbol};
+use crate::asm::{AsmError, Symbol};
+use crate::instruct::{AddressType, Instruct};
 use std::collections::HashMap;
 
 #[derive(Debug)]
