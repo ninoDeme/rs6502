@@ -44,20 +44,25 @@ for (let op of ops) {
   if (add == null) {
     throw new Error("Invalid OpCode: " + op.address_mode);
   }
+  // if (op.machine_cycles === 2 && ['Immediate', 'Accumulator', 'Impl'].includes(add)) {
+  // }
+  if (op.machine_cycles === 2) {
+    console.log(`0x${index.toString(16).toUpperCase()} => Some((Instruct::${op.name}, AddressType::${add}), ),`)
+  }
   res.set(op.name, [...res.get(op.name) ?? [], [add, index]]);
 };
-let all_add = [...res.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1);
-
-let result = "";
-for (let [key, codes] of all_add) {
-  let str = `Instruct::${key} => match addr {\n`;
-  codes = codes.sort((a, b) => add_i[a[0]] < add_i[b[0]] ? -1 : 1);
-  for (let [add, op_code] of codes) {
-    str += `AddressType::${add} => Some(0x${op_code.toString(16).toUpperCase()}),\n`
-  }
-  str += "_ => None,\n"
-  str += "},\n"
-  result += str;
-}
-
-console.log(result);
+// let all_add = [...res.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1);
+//
+// let result = "";
+// for (let [key, codes] of all_add) {
+//   let str = `Instruct::${key} => match addr {\n`;
+//   codes = codes.sort((a, b) => add_i[a[0]] < add_i[b[0]] ? -1 : 1);
+//   for (let [add, op_code] of codes) {
+//     str += `AddressType::${add} => Some(0x${op_code.toString(16).toUpperCase()}),\n`
+//   }
+//   str += "_ => None,\n"
+//   str += "},\n"
+//   result += str;
+// }
+//
+// console.log(result);

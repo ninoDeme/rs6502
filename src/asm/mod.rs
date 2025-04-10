@@ -1,3 +1,11 @@
+use std::fs::File;
+
+use std::io::BufRead;
+use std::io;
+
+use std::path::Path;
+use crate::asm::parser::parse;
+use crate::asm::lexer::lex;
 pub mod lexer;
 pub mod parser;
 
@@ -44,3 +52,34 @@ impl AsmError {
         };
     }
 }
+
+pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+where P: AsRef<Path>, {
+    let file = File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
+}
+
+pub fn assemble(input: Vec<String>) -> Vec<u8> {
+    let tokens = lex(input.iter());
+
+    // println!("{:?}", tokens);
+    let res = parse(tokens);
+    match res {
+        Ok(value) => {
+            return value;
+        },
+        Err(error) => {
+            println!("ERROR: {}", error.reason);
+            if let Some(symbol) = error.symbol {
+                println!(" -> STDIN:{}:{}", symbol.start.line, symbol.start.col + 1);
+                println!("{} | {}", symbol.start.line, input[symbol.start.line - 1]);
+                let n_width = format!("{}", symbol.start.line).len();
+                let start = symbol.start.col;
+                let width = symbol.end.col - symbol.start.col;
+                println!("{} | {}{}", " ".repeat(n_width), " ".repeat(start - 1), "~".repeat(width));
+            }
+            panic!("");
+        }
+    }
+}
+
