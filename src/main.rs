@@ -3,11 +3,11 @@ use std::fmt;
 
 mod asm;
 mod instruct;
-mod rs6502;
+mod m6502;
 mod memory;
 
 use crate::asm::{assemble, read_lines};
-use crate::rs6502::{State, step};
+use crate::m6502::{State, step};
 use crate::memory::{DefaultMemory, Memory};
 
 fn main() -> io::Result<()> {

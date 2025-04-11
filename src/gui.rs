@@ -1,12 +1,13 @@
-use iced::widget::{button, checkbox, column, text, Column, row};
+use iced::widget::{button, checkbox, column, text, Column, row, Row};
+use iced::alignment::{Vertical};
 
 mod asm;
 mod instruct;
-mod rs6502;
+mod m6502;
 mod memory;
 
 use crate::asm::{assemble, read_lines};
-use crate::rs6502::{State, step};
+use crate::m6502::{State, step};
 use crate::memory::{DefaultMemory, Memory};
 
 pub fn main() -> iced::Result {
@@ -15,12 +16,13 @@ pub fn main() -> iced::Result {
 
 struct Machine {
     memory: DefaultMemory,
-    state: State
+    state: State,
+    curr_page: u8
 }
 
 impl Default for Machine {
     fn default() -> Self {
-        let mut state = State::new();
+        let state = State::new();
 
         let mut memory = DefaultMemory::new();
 
@@ -37,15 +39,37 @@ impl Default for Machine {
         }
         Machine {
             state,
-            memory
+            memory,
+            curr_page: 0
         }
     }
+}
+
+fn page_widget(memory: &dyn Memory, curr_page: u8) -> Column<'_, Message>{
+    let mut pageCol = column![
+        row![
+            button("-10").on_press_maybe(if curr_page >= 0x10 {Some(Message::ChangePage(-0x10))} else {None}),
+            button("-1").on_press_maybe(if curr_page >= 0x01 {Some(Message::ChangePage(-0x1))} else {None}),
+            text(format!("{:02x}", curr_page)),
+            button("+1").on_press_maybe(if curr_page <= (0xFF - 0x01) {Some(Message::ChangePage(0x1))} else {None}),
+            button("+10").on_press_maybe(if curr_page <= (0xFF - 0x10) {Some(Message::ChangePage(0x10))} else {None}),
+        ].spacing(4).align_y(Vertical::Center),
+    ].spacing(4);
+    for h in 0x00..0x10 {
+        let mut row = Row::new().spacing(4);
+        for l in 0x00..0x10 {
+            row =  row.push(text(format!("{:02x}", memory.get((h * 0x10) + l + ((curr_page as u16) * 0x0100)))));
+        }
+        pageCol = pageCol.push(row);
+    }
+    return pageCol;
 }
 
 #[derive(Debug, Clone, Copy)]
 enum Message {
     HalfStep,
     Step,
+    ChangePage(i8),
     ToggleReset(bool)
 }
 
@@ -77,6 +101,9 @@ impl Machine {
             },
             Message::ToggleReset(is_checked) => {
                 self.state.res = is_checked;
+            },
+            Message::ChangePage(ammount) => {
+                self.curr_page = self.curr_page.checked_add_signed(ammount).unwrap();
             }
         }
     }
@@ -125,7 +152,9 @@ impl Machine {
             text(self.state.registers.pc),
             button("Step").on_press_maybe(if self.state.clock1 {Some(Message::Step)} else {None}),
             button("Half step").on_press(Message::HalfStep),
-            checkbox("Reset signal", self.state.res).on_toggle(Message::ToggleReset)
+            checkbox("Reset signal", self.state.res).on_toggle(Message::ToggleReset),
+            page_widget(&self.memory, self.curr_page)
         ]
+
     }
 }

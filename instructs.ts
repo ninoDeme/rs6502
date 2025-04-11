@@ -46,9 +46,8 @@ for (let op of ops) {
   }
   // if (op.machine_cycles === 2 && ['Immediate', 'Accumulator', 'Impl'].includes(add)) {
   // }
-  if (op.machine_cycles === 2) {
-    console.log(`0x${index.toString(16).toUpperCase()} => Some((Instruct::${op.name}, AddressType::${add}), ),`)
-  }
+  // console.log(`0x${index.toString(16).toUpperCase()} => Some((Instruct::${op.name}, AddressType::${add}, ${op.machine_cycles}, ${op.extra_cycles_possible})),`)
+  console.log(`0x${index.toString(16).toUpperCase()} => Some(InstructionInfo {instruction: Instruct::${op.name}, type: AddressType::${add}, cycles: ${op.machine_cycles}, extra_cycles: ${op.extra_cycles_possible}}),`)
   res.set(op.name, [...res.get(op.name) ?? [], [add, index]]);
 };
 // let all_add = [...res.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1);

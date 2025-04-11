@@ -1,7 +1,7 @@
 use std::fmt;
 
 pub trait Memory: fmt::Debug {
-    fn get(&mut self, addr: u16) -> u8;
+    fn get(&self, addr: u16) -> u8;
     fn set(&mut self, addr: u16, value: u8) -> ();
 }
 
@@ -19,7 +19,7 @@ impl DefaultMemory {
 }
 
 impl Memory for DefaultMemory {
-    fn get(&mut self, addr: u16) -> u8 {
+    fn get(&self, addr: u16) -> u8 {
         return self.memory[addr as usize];
     }
     fn set(&mut self, addr: u16, value: u8) -> () {

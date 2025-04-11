@@ -1,4 +1,4 @@
-use crate::instruct::{Instruct, AddressType};
+use crate::instruct::{Instruct, AddressType, InstructionInfo};
 use std::fmt;
 
 const NEGATIVE : u8 = 0b10000000;
@@ -255,10 +255,10 @@ fn step1(state: &mut State) {
         }
     };
     let op_code = state.ir; 
-    let (ins, addr_type) = Instruct::from_op_code(op_code).unwrap();
-    match addr_type {
+    let InstructionInfo {instruction, mode, cycles, extra_cycles} = Instruct::from_op_code(op_code).unwrap();
+    match mode {
         AddressType::Impl => {
-            match ins {
+            match instruction {
                 Instruct::BRK => {
                     if state.timing.t6 {
                         state.ab = 0xFFFC;
@@ -273,7 +273,7 @@ fn step1(state: &mut State) {
             }
         },
         AddressType::Immediate => {
-            match ins {
+            match instruction {
                 Instruct::ADC => {
                     if state.timing.t1 {
                         state.ab = state.registers.pc + 2;
@@ -317,7 +317,7 @@ fn step2(state: &mut State) {
             state.timing.clear();
             state.timing.t6 = true;
         } else if state.timing.t6 {
-            state.registers.pc = (state.db as u16);
+            state.registers.pc = state.db as u16;
             state.timing.clear();
             state.timing.t0 = true;
         } else if state.timing.t0 {
@@ -333,10 +333,10 @@ fn step2(state: &mut State) {
         };
     } else {
         let op_code = state.ir; 
-        let (ins, addr_type) = Instruct::from_op_code(op_code).unwrap();
-        match addr_type {
+        let InstructionInfo {instruction, mode, cycles, extra_cycles} = Instruct::from_op_code(op_code).unwrap();
+        match mode {
             AddressType::Immediate => {
-                match ins {
+                match instruction {
                     Instruct::ADC => {
                         if state.timing.t1 {
                             state.timing.clear();
