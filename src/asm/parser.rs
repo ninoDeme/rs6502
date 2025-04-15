@@ -143,16 +143,14 @@ pub fn extend_tokens(tokens: Vec<Token>) -> Result<Vec<Token>, AsmError> {
     return Ok(new_tokens);
 }
 
-const ENTRY_POINT: u16 = 0x0600;
-
-pub fn parse(tokens: Vec<Token>) -> Result<Vec<u8>, AsmError> {
+pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> {
     let mut tokens = extend_tokens(tokens)?.into_iter().peekable();
     let mut labels: HashMap<String, u16> = HashMap::new();
     let mut state = PState::Default;
 
     let mut instructions: Vec<InterOpCode> = vec![];
 
-    let mut ins_addr = ENTRY_POINT;
+    let mut ins_addr = entry_point;
     loop {
         match state {
             PState::Default => {

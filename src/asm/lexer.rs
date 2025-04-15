@@ -30,10 +30,8 @@ pub enum TokenType {
 }
 
 pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
-    let lines = input.enumerate().map(|(i, l)| (i + 1, l)).peekable();
-    let mut tokens: Vec<Token> = vec![];
-
-    tokens.push(Token {
+    let lines = input.enumerate().map(|(i, l)| (i + 1, l));
+    let mut tokens: Vec<Token> = vec![Token {
         token: TokenType::NewLine,
         symbol: Symbol {
             start: Pos {
@@ -46,7 +44,7 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
             },
             text: String::from("\n")
         }
-    });
+    }];
 
     for (line_i, line) in lines {
         let mut state = LState::Default;

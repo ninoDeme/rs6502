@@ -10,7 +10,7 @@ const INTERRUPT: u8 = 0b00000100;
 const ZERO     : u8 = 0b00000010;
 const CARRY    : u8 = 0b00000001;
 
-#[derive(fmt::Debug)]
+#[derive(fmt::Debug, Clone)]
 pub struct Registers {
     // Program Counter
     pub pc: u16,
@@ -29,7 +29,7 @@ pub struct Registers {
 impl Registers {
     pub fn new() -> Self {
         Registers {
-            pc: 0x00,
+            pc: 0x0000,
             ac: 0x00,
             xr: 0x00,
             yr: 0x00,
@@ -37,6 +37,27 @@ impl Registers {
             sr: 0b00000110,
             sp: 0xFD
         }
+    }
+    pub fn status_add(&mut self, flags: u8) -> () {
+        self.sr |= flags;
+    }
+    pub fn status_remove(&mut self, flags: u8) -> () {
+        self.sr &= !flags;
+    }
+    pub fn status_has(&self, flags: u8) -> bool {
+        (self.sr & flags) == flags
+    }
+    pub fn fmt_status(&self) -> String {
+        format!(
+            "{}{}-{}{}{}{}{}", 
+            if self.status_has(NEGATIVE) {'N'} else {'n'},
+            if self.status_has(OVERFLOW) {'V'} else {'v'},
+            if self.status_has(BREAK) {'b'} else {'B'},
+            if self.status_has(DECIMAL) {'D'} else {'d'},
+            if self.status_has(INTERRUPT) {'I'} else {'i'},
+            if self.status_has(ZERO) {'Z'} else {'z'},
+            if self.status_has(CARRY) {'C'} else {'c'},
+        )
     }
 }
 
@@ -72,18 +93,20 @@ impl TimingState {
         }
     }
 
-    pub fn clear(&mut self) -> () {
-        self.t0 = false;
-        self.tp = false;
-        self.t2 = false;
-        self.t3 = false;
-        self.t4 = false;
-        self.t5 = false;
-        self.t1 = false;
-        self.t6 = false;
-        self.v0 = false;
-        self.sd1 = false;
-        self.sd2 = false;
+    pub fn clear() -> TimingState {
+        TimingState {
+            t0: false,
+            tp: false,
+            t2: false,
+            t3: false,
+            t4: false,
+            t5: false,
+            t1: false,
+            t6: false,
+            v0: false,
+            sd1: false,
+            sd2: false,
+        }
     }
 }
 
@@ -160,7 +183,7 @@ impl fmt::Debug for TimingState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct State {
     pub registers: Registers,
     pub total_cycles: i32,
@@ -178,6 +201,7 @@ pub struct State {
     pub clock2: bool,
 
     pub timing: TimingState,
+    pub next_timing: TimingState,
 
     // sync output
     pub sync: bool,
@@ -206,6 +230,7 @@ impl State {
             clock2: false,
 
             timing: TimingState::new(),
+            next_timing: TimingState::new(),
 
             sync: false,
 
@@ -219,18 +244,20 @@ impl State {
 
 pub fn step(state: &mut State) {
     if state.res {
-        state.timing.clear();
-        state.timing.t2 = true;
+        state.next_timing = TimingState::clear();
+        state.next_timing.t2 = true;
         state.ir = 0;
         state.registers.sr &= !BREAK;
         state.clock1 = true;
         state.clock2 = false;
+        state.total_cycles = 0;
         return;
     };
     if state.irq || state.nmi {
         state.registers.sr &= INTERRUPT;
     };
     if state.clock1 {
+        state.total_cycles += 1;
         state.clock1 = false;
         state.clock2 = true;
         step1(state);
@@ -238,15 +265,15 @@ pub fn step(state: &mut State) {
         state.clock1 = true;
         state.clock2 = false;
         step2(state);
-        state.total_cycles += 1;
     };
 }
 
 fn step1(state: &mut State) {
+    state.timing = state.next_timing.clone();
     if state.timing.t2 {
-        if state.res {
-            state.timing.clear();
-            state.timing.t2 = true;
+        if state.irq || state.nmi {
+            state.next_timing = TimingState::clear();
+            state.next_timing.t2 = true;
             state.registers.sr &= !BREAK;
             state.ir = 0;
             return;
@@ -276,7 +303,7 @@ fn step1(state: &mut State) {
             match instruction {
                 Instruct::ADC => {
                     if state.timing.t1 {
-                        state.ab = state.registers.pc + 2;
+                        state.registers.pc = state.registers.pc + 2;
                     };
                     if state.timing.t2 {
                         state.ab = state.registers.pc + 1;
@@ -285,92 +312,166 @@ fn step1(state: &mut State) {
                 _ => unimplemented!()
             };
         },
+        AddressType::ZeroPage => {
+            match instruction {
+                Instruct::ADC => {
+                    if state.timing.t1 {
+                        state.registers.pc = state.registers.pc + 3;
+                    };
+                    if state.timing.t2 {
+                        state.ab = state.registers.pc + 1;
+                    };
+                    if state.timing.t3 {
+                        state.ab = state.pd;
+                    };
+                },
+                Instruct::LDA => {
+                    if state.timing.t1 {
+                        state.registers.pc = state.registers.pc + 2;
+                    };
+                    if state.timing.t2 {
+                        state.ab = state.registers.pc + 1;
+                    };
+                },
+                Instruct::STA => {
+                    if state.timing.t1 {
+                        state.registers.pc = state.registers.pc + 2;
+                    };
+                    if state.timing.t2 {
+                        state.ab = state.registers.pc + 1;
+                        state.db = state.registers.ac;
+                        state.rw = true;
+                    };
+                },
+                _ => unimplemented!()
+            };
+        },
         _ => unimplemented!()
     };
+    if state.timing.t1 {
+        state.ab = state.registers.pc;
+    }
 }
 
 fn step2(state: &mut State) {
     state.pd = state.db;
-    if state.timing.t2 {
-        state.ir = state.pd;
-    };
-    if state.ir == 0 {
-        if state.timing.t2 {
-            if state.registers.sp & BREAK != BREAK {
-                state.timing.clear();
-                state.timing.t3 = true;
-            } else {
-                state.timing.clear();
-                // state.timing.t0 = true;
-                state.timing.t3 = true;
+
+    let prefetch = state.timing.t1;
+
+    let op_code = state.ir; 
+    let InstructionInfo {instruction, mode, cycles, extra_cycles} = Instruct::from_op_code(op_code).unwrap();
+    match mode {
+        AddressType::Impl => {
+            match instruction {
+                Instruct::BRK => {
+                    if state.timing.t2 {
+                        if state.registers.sp & BREAK != BREAK {
+                            state.next_timing = TimingState::clear();
+                            state.next_timing.t3 = true;
+                        } else {
+                            state.next_timing = TimingState::clear();
+                            // state.timing.t0 = true;
+                            state.next_timing.t3 = true;
+                        };
+                    } else if state.timing.t3 {
+                        state.ir = 0;
+                        state.registers.sp = 0;
+                        state.registers.pc = 0;
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t4 = true;
+                    } else if state.timing.t4 {
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t5 = true;
+                    } else if state.timing.t5 {
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t6 = true;
+                    } else if state.timing.t6 {
+                        state.registers.pc = state.db as u16;
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t0 = true;
+                    } else if state.timing.t0 {
+                        state.registers.pc = (state.db as u16) << 8;
+                        // state.registers.sp |= BREAK;
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t1 = true;
+                    } 
+                },
+                _ => unimplemented!()
+            }
+        },
+        AddressType::Immediate => {
+            match instruction {
+                Instruct::ADC => {
+                    if state.timing.t2 {
+                        ins_adc(state);
+                    };
+                    if state.timing.t0 {
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t1 = true;
+                    };
+                },
+                Instruct::LDA => {
+                    if state.timing.t2 {
+                        state.registers.ac = state.pd;
+                    };
+                    if state.timing.t0 {
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t1 = true;
+                    };
+                },
+                _ => unimplemented!()
             };
-        } else if state.timing.t3 {
-            state.ir = 0;
-            state.registers.sp = 0;
-            state.registers.pc = 0;
-            state.timing.clear();
-            state.timing.t4 = true;
-        } else if state.timing.t4 {
-            state.timing.clear();
-            state.timing.t5 = true;
-        } else if state.timing.t5 {
-            state.timing.clear();
-            state.timing.t6 = true;
-        } else if state.timing.t6 {
-            state.registers.pc = state.db as u16;
-            state.timing.clear();
-            state.timing.t0 = true;
-        } else if state.timing.t0 {
-            state.registers.pc = (state.db as u16) << 8;
-            // state.registers.sp |= BREAK;
-            state.timing.clear();
-            state.timing.t1 = true;
-        } else if state.timing.t1 {
-            state.timing.clear();
-            state.timing.t2 = true;
-        } else {
-            panic!("Invalid Timing State");
-        };
-    } else {
-        let op_code = state.ir; 
+        },
+        AddressType::ZeroPage => {
+            match instruction {
+                Instruct::ADC => {
+                    // if state.timing.t2 {
+                    // };
+                    if state.timing.t3 {
+                        ins_adc(state);
+                    };
+                    if state.timing.t0 {
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t1 = true;
+                    };
+                },
+                Instruct::STA => {
+                    if state.timing.t0 {
+                        state.next_timing = TimingState::clear();
+                        state.next_timing.t1 = true;
+                    };
+                },
+                _ => unimplemented!()
+            };
+        },
+        _ => unimplemented!()
+    };
+
+    if prefetch {
+        let op_code = state.pd; 
         let InstructionInfo {instruction, mode, cycles, extra_cycles} = Instruct::from_op_code(op_code).unwrap();
-        match mode {
-            AddressType::Immediate => {
-                match instruction {
-                    Instruct::ADC => {
-                        if state.timing.t1 {
-                            state.timing.clear();
-                            state.timing.t2 = true;
-                        };
-                        if state.timing.t2 {
-                            let value = state.db;
-                            state.registers.pc += 1;
-                            if state.registers.sr & CARRY == CARRY {
-                                let (value, carry) = u8::overflowing_add(state.registers.ac, 1);
-                                state.registers.ac = value;
-                                if carry {
-                                    state.registers.sr |= CARRY;
-                                } else {
-                                    state.registers.sr &= !CARRY;
-                                };
-                            }
-                            let (result, carry) = u8::overflowing_add(state.registers.ac, value);
-                            state.registers.ac = result;
-                            if carry {
-                                state.registers.sr |= CARRY;
-                            };
-                            state.registers.pc += 1;
-                        };
-                        if state.timing.t0 {
-                            state.timing.clear();
-                            state.timing.t1 = true;
-                        };
-                    },
-                    _ => unimplemented!()
-                };
-            },
-            _ => unimplemented!()
-        };
+        state.next_timing = TimingState::clear();
+        state.next_timing.t2 = true;
+        if cycles == 2 {
+            state.next_timing.t0 = true;
+        }
     };
 }
 
+fn ins_adc(state: &mut State) -> () {
+    let value = state.pd;
+    if state.registers.status_has(CARRY) {
+        let (value, carry) = state.registers.ac.overflowing_add(1);
+        state.registers.ac = value;
+        if carry {
+            state.registers.status_add(CARRY)
+        } else {
+            state.registers.status_remove(CARRY)
+        };
+    }
+    let (result, carry) = state.registers.ac.overflowing_add(value);
+    state.registers.ac = result;
+    if carry {
+        state.registers.status_add(CARRY)
+    };
+}

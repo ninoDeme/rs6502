@@ -59,11 +59,11 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn assemble(input: Vec<String>) -> Vec<u8> {
+pub fn assemble(input: Vec<String>, entry_point: u16) -> Vec<u8> {
     let tokens = lex(input.iter());
 
     // println!("{:?}", tokens);
-    let res = parse(tokens);
+    let res = parse(tokens, entry_point);
     match res {
         Ok(value) => {
             return value;

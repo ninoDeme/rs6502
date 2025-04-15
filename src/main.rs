@@ -16,7 +16,7 @@ fn main() -> io::Result<()> {
     let mut memory = DefaultMemory::new();
     
     let lines: Vec<String> = read_lines("example2.asm").unwrap().map(|l| l.unwrap()).collect();
-    let res = assemble(lines);
+    let res = assemble(lines, 0x0600);
 
     memory.set(0xFFFC, 0x00);
     memory.set(0xFFFD, 0x00);
