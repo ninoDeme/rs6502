@@ -1,14 +1,14 @@
-use crate::instruct::{Instruct, AddressType, InstructionInfo};
+use crate::instruct::{AddressType, Instruct, InstructionInfo};
 use std::fmt;
 
-const NEGATIVE : u8 = 0b10000000;
-const OVERFLOW : u8 = 0b01000000;
-const _IGNORED : u8 = 0b00100000;
-const BREAK    : u8 = 0b00010000;
-const DECIMAL  : u8 = 0b00001000;
+const NEGATIVE: u8 = 0b10000000;
+const OVERFLOW: u8 = 0b01000000;
+const _IGNORED: u8 = 0b00100000;
+const BREAK: u8 = 0b00010000;
+const DECIMAL: u8 = 0b00001000;
 const INTERRUPT: u8 = 0b00000100;
-const ZERO     : u8 = 0b00000010;
-const CARRY    : u8 = 0b00000001;
+const ZERO: u8 = 0b00000010;
+const CARRY: u8 = 0b00000001;
 
 #[derive(fmt::Debug, Clone)]
 pub struct Registers {
@@ -23,7 +23,7 @@ pub struct Registers {
     // Status register [NV-BDIZC]
     pub sr: u8,
     // Stack pointer
-    pub sp: u8
+    pub sp: u8,
 }
 
 impl Registers {
@@ -35,7 +35,7 @@ impl Registers {
             yr: 0x00,
             //    nv-bdizc
             sr: 0b00000110,
-            sp: 0xFD
+            sp: 0xFD,
         }
     }
     pub fn status_add(&mut self, flags: u8) -> () {
@@ -49,14 +49,14 @@ impl Registers {
     }
     pub fn fmt_status(&self) -> String {
         format!(
-            "{}{}-{}{}{}{}{}", 
-            if self.status_has(NEGATIVE) {'N'} else {'n'},
-            if self.status_has(OVERFLOW) {'V'} else {'v'},
-            if self.status_has(BREAK) {'b'} else {'B'},
-            if self.status_has(DECIMAL) {'D'} else {'d'},
-            if self.status_has(INTERRUPT) {'I'} else {'i'},
-            if self.status_has(ZERO) {'Z'} else {'z'},
-            if self.status_has(CARRY) {'C'} else {'c'},
+            "{}{}-{}{}{}{}{}",
+            if self.status_has(NEGATIVE) { 'N' } else { 'n' },
+            if self.status_has(OVERFLOW) { 'V' } else { 'v' },
+            if self.status_has(BREAK) { 'b' } else { 'B' },
+            if self.status_has(DECIMAL) { 'D' } else { 'd' },
+            if self.status_has(INTERRUPT) { 'I' } else { 'i' },
+            if self.status_has(ZERO) { 'Z' } else { 'z' },
+            if self.status_has(CARRY) { 'C' } else { 'c' },
         )
     }
 }
@@ -210,7 +210,6 @@ pub struct State {
     pub res: bool,
     pub irq: bool,
     pub nmi: bool,
-
 }
 
 impl State {
@@ -240,7 +239,6 @@ impl State {
         }
     }
 }
-
 
 pub fn step(state: &mut State) {
     if state.res {
@@ -281,23 +279,26 @@ fn step1(state: &mut State) {
             state.ir = state.pd;
         }
     };
-    let op_code = state.ir; 
-    let InstructionInfo {instruction, mode, cycles, extra_cycles} = Instruct::from_op_code(op_code).unwrap();
+    let op_code = state.ir;
+    let InstructionInfo {
+        instruction,
+        mode,
+        cycles,
+        extra_cycles,
+    } = Instruct::from_op_code(op_code).unwrap();
     match mode {
-        AddressType::Impl => {
-            match instruction {
-                Instruct::BRK => {
-                    if state.timing.t6 {
-                        state.ab = 0xFFFC;
-                        state.rw = true;
-                    };
-                    if state.timing.t0 {
-                        state.ab = 0xFFFD;
-                        state.rw = true;
-                    };
-                }
-                _ => unimplemented!()
+        AddressType::Impl => match instruction {
+            Instruct::BRK => {
+                if state.timing.t6 {
+                    state.ab = 0xFFFC;
+                    state.rw = true;
+                };
+                if state.timing.t0 {
+                    state.ab = 0xFFFD;
+                    state.rw = true;
+                };
             }
+            _ => unimplemented!(),
         },
         AddressType::Immediate => {
             match instruction {
@@ -308,10 +309,10 @@ fn step1(state: &mut State) {
                     if state.timing.t2 {
                         state.ab = state.registers.pc + 1;
                     };
-                },
-                _ => unimplemented!()
+                }
+                _ => unimplemented!(),
             };
-        },
+        }
         AddressType::ZeroPage => {
             match instruction {
                 Instruct::ADC => {
@@ -324,7 +325,7 @@ fn step1(state: &mut State) {
                     if state.timing.t3 {
                         state.ab = state.pd;
                     };
-                },
+                }
                 Instruct::LDA => {
                     if state.timing.t1 {
                         state.registers.pc = state.registers.pc + 2;
@@ -332,7 +333,7 @@ fn step1(state: &mut State) {
                     if state.timing.t2 {
                         state.ab = state.registers.pc + 1;
                     };
-                },
+                }
                 Instruct::STA => {
                     if state.timing.t1 {
                         state.registers.pc = state.registers.pc + 2;
@@ -342,11 +343,11 @@ fn step1(state: &mut State) {
                         state.db = state.registers.ac;
                         state.rw = true;
                     };
-                },
-                _ => unimplemented!()
+                }
+                _ => unimplemented!(),
             };
-        },
-        _ => unimplemented!()
+        }
+        _ => unimplemented!(),
     };
     if state.timing.t1 {
         state.ab = state.registers.pc;
@@ -358,8 +359,13 @@ fn step2(state: &mut State) {
 
     let prefetch = state.timing.t1;
 
-    let op_code = state.ir; 
-    let InstructionInfo {instruction, mode, cycles, extra_cycles} = Instruct::from_op_code(op_code).unwrap();
+    let op_code = state.ir;
+    let InstructionInfo {
+        instruction,
+        mode,
+        cycles,
+        extra_cycles,
+    } = Instruct::from_op_code(op_code).unwrap();
     match mode {
         AddressType::Impl => {
             match instruction {
@@ -394,11 +400,11 @@ fn step2(state: &mut State) {
                         // state.registers.sp |= BREAK;
                         state.next_timing = TimingState::clear();
                         state.next_timing.t1 = true;
-                    } 
-                },
-                _ => unimplemented!()
+                    }
+                }
+                _ => unimplemented!(),
             }
-        },
+        }
         AddressType::Immediate => {
             match instruction {
                 Instruct::ADC => {
@@ -409,7 +415,7 @@ fn step2(state: &mut State) {
                         state.next_timing = TimingState::clear();
                         state.next_timing.t1 = true;
                     };
-                },
+                }
                 Instruct::LDA => {
                     if state.timing.t2 {
                         state.registers.ac = state.pd;
@@ -418,10 +424,10 @@ fn step2(state: &mut State) {
                         state.next_timing = TimingState::clear();
                         state.next_timing.t1 = true;
                     };
-                },
-                _ => unimplemented!()
+                }
+                _ => unimplemented!(),
             };
-        },
+        }
         AddressType::ZeroPage => {
             match instruction {
                 Instruct::ADC => {
@@ -434,22 +440,27 @@ fn step2(state: &mut State) {
                         state.next_timing = TimingState::clear();
                         state.next_timing.t1 = true;
                     };
-                },
+                }
                 Instruct::STA => {
                     if state.timing.t0 {
                         state.next_timing = TimingState::clear();
                         state.next_timing.t1 = true;
                     };
-                },
-                _ => unimplemented!()
+                }
+                _ => unimplemented!(),
             };
-        },
-        _ => unimplemented!()
+        }
+        _ => unimplemented!(),
     };
 
     if prefetch {
-        let op_code = state.pd; 
-        let InstructionInfo {instruction, mode, cycles, extra_cycles} = Instruct::from_op_code(op_code).unwrap();
+        let op_code = state.pd;
+        let InstructionInfo {
+            instruction,
+            mode,
+            cycles,
+            extra_cycles,
+        } = Instruct::from_op_code(op_code).unwrap();
         state.next_timing = TimingState::clear();
         state.next_timing.t2 = true;
         if cycles == 2 {

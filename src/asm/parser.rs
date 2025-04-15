@@ -6,7 +6,7 @@ use std::collections::HashMap;
 #[derive(Debug)]
 enum InterAddr {
     Addr(AddressType, Option<Value>),
-    Label(Symbol)
+    Label(Symbol),
 }
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ struct InterOpCode {
     symbol: Symbol,
     instruct: Instruct,
     ins_addr: u16,
-    addr: InterAddr
+    addr: InterAddr,
 }
 
 // pub fn get_op(instruction: &str, addressing: AddressType) -> OpCode { match instruction.to_uppercase().as_str() {
@@ -32,14 +32,14 @@ pub enum Radix {
     Hex,
     Dec,
     Oct,
-    Bin
+    Bin,
 }
 
 #[derive(Debug)]
 struct Value {
     long: bool,
     symbol: Symbol,
-    value: i32
+    value: i32,
 }
 
 enum PState {
@@ -54,37 +54,52 @@ fn is_keyword(text: &str) -> bool {
 
 fn throw_newline(token: Option<Token>) -> Result<Token, AsmError> {
     return match token {
-        t @ (None | Some(Token {token: TokenType::NewLine, ..})) => {
-            Err(AsmError::new("Early EOF", t.map(|token| token.symbol)))
-        },
+        t @ (None
+        | Some(Token {
+            token: TokenType::NewLine,
+            ..
+        })) => Err(AsmError::new("Early EOF", t.map(|token| token.symbol))),
         Some(val) => Ok(val),
-    }
+    };
 }
 
 fn parse_number(token: Token, radix: Radix) -> Result<Value, AsmError> {
     if token.token != TokenType::Number {
-        return Err(AsmError::new(&format!("Expected number, found {}", token.symbol.text), Some(token.symbol)))
+        return Err(AsmError::new(
+            &format!("Expected number, found {}", token.symbol.text),
+            Some(token.symbol),
+        ));
     };
-    let value = match i32::from_str_radix(token.symbol.text.as_str(), match radix {
-        Radix::Bin => 2,
-        Radix::Oct => 8,
-        Radix::Dec => 10,
-        Radix::Hex => 16,
-    }) {
+    let value = match i32::from_str_radix(
+        token.symbol.text.as_str(),
+        match radix {
+            Radix::Bin => 2,
+            Radix::Oct => 8,
+            Radix::Dec => 10,
+            Radix::Hex => 16,
+        },
+    ) {
         Ok(res) => res,
-        Err(_) => return Err(AsmError::new(format!("{} is not a valid number", token.symbol.text).as_str(), Some(token.symbol)))
+        Err(_) => {
+            return Err(AsmError::new(
+                format!("{} is not a valid number", token.symbol.text).as_str(),
+                Some(token.symbol),
+            ))
+        }
     };
-    let is16bit = value > 255 || token.symbol.text.chars().count() > match radix {
-        Radix::Bin => 8,
-        Radix::Oct => 4,
-        Radix::Dec => 3,
-        Radix::Hex => 2,
-    };
+    let is16bit = value > 255
+        || token.symbol.text.chars().count()
+            > match radix {
+                Radix::Bin => 8,
+                Radix::Oct => 4,
+                Radix::Dec => 3,
+                Radix::Hex => 2,
+            };
     return Ok(Value {
         long: is16bit,
         symbol: token.symbol,
-        value
-    })
+        value,
+    });
 }
 
 pub fn extend_tokens(tokens: Vec<Token>) -> Result<Vec<Token>, AsmError> {
@@ -99,21 +114,32 @@ pub fn extend_tokens(tokens: Vec<Token>) -> Result<Vec<Token>, AsmError> {
                 if let Some((define_name, define_vec)) = parsing_define {
                     defines.insert(define_name, define_vec);
                     parsing_define = None;
-                } 
-                if tokens.peek().is_some_and(|n_token| &n_token.symbol.text.to_lowercase() == "define" ) {
+                }
+                if tokens
+                    .peek()
+                    .is_some_and(|n_token| &n_token.symbol.text.to_lowercase() == "define")
+                {
                     tokens.next();
                     match tokens.next() {
-                        Some(define_name @ Token {token: TokenType::Identifier, ..}) => {
+                        Some(
+                            define_name @ Token {
+                                token: TokenType::Identifier,
+                                ..
+                            },
+                        ) => {
                             parsing_define = Some((define_name.symbol.text, vec![]));
-                        },
+                        }
                         token => {
-                            return Err(AsmError::new("Invalid define identifier", token.map(|t| t.symbol)))
+                            return Err(AsmError::new(
+                                "Invalid define identifier",
+                                token.map(|t| t.symbol),
+                            ))
                         }
                     }
                 } else {
                     new_tokens.push(token);
                 }
-            },
+            }
             TokenType::Identifier => {
                 // println!("{token:?}");
                 // println!("{defines:?}");
@@ -162,19 +188,20 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                                 let ins_symbol = token.symbol;
                                 state = PState::PostIntruction(ins_symbol, ins);
                             } else if token.symbol.text.to_lowercase() == "define" {
-                                return Err(AsmError::new("Invalid token", Some(token.symbol)))
+                                return Err(AsmError::new("Invalid token", Some(token.symbol)));
                             } else if tokens.next_if(|t| t.token == TokenType::Colon).is_some() {
                                 labels.insert(token.symbol.text, ins_addr);
                             } else {
-                                return Err(AsmError::new("Unknown instruction or invalid token", Some(token.symbol)))
+                                return Err(AsmError::new(
+                                    "Unknown instruction or invalid token",
+                                    Some(token.symbol),
+                                ));
                             }
-                        },
+                        }
                         TokenType::NewLine => {
                             state = PState::Default;
                         }
-                        _ => {
-                            return Err(AsmError::new("Invalid token", Some(token.symbol)))
-                        }
+                        _ => return Err(AsmError::new("Invalid token", Some(token.symbol))),
                     }
                 } else {
                     break;
@@ -183,74 +210,83 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
             PState::PostIntruction(ins_symbol, ins) => {
                 let curr_token = tokens.peek();
                 match curr_token {
-                    Some(Token {token: TokenType::Hash, ..}) => {
-                        tokens.next().unwrap(); 
+                    Some(Token {
+                        token: TokenType::Hash,
+                        ..
+                    }) => {
+                        tokens.next().unwrap();
                         let mut token = throw_newline(tokens.next())?;
                         let radix = match token.token {
                             TokenType::Bin => {
                                 token = throw_newline(tokens.next())?;
                                 Radix::Bin
-                            },
+                            }
                             TokenType::Oct => {
                                 token = throw_newline(tokens.next())?;
                                 Radix::Oct
-                            },
+                            }
                             TokenType::Hex => {
                                 token = throw_newline(tokens.next())?;
                                 Radix::Hex
-                            },
-                            TokenType::Number => {
-                                Radix::Dec
-                            },
-                            _ => unreachable!()
+                            }
+                            TokenType::Number => Radix::Dec,
+                            _ => unreachable!(),
                         };
 
                         let value = parse_number(token, radix)?;
                         if value.long {
-                            return Err(AsmError::new("number can't be bigger than 8 bits", Some(value.symbol)))
+                            return Err(AsmError::new(
+                                "number can't be bigger than 8 bits",
+                                Some(value.symbol),
+                            ));
                         }
                         instructions.push(InterOpCode {
                             symbol: ins_symbol,
                             instruct: ins,
                             ins_addr,
-                            addr: InterAddr::Addr(AddressType::Immediate, Some(value))
+                            addr: InterAddr::Addr(AddressType::Immediate, Some(value)),
                         });
                         ins_addr += 2;
                         state = PState::Default;
-                    },
-                    Some(Token {token: TokenType::LParen, ..}) => {
-                        tokens.next().unwrap(); 
+                    }
+                    Some(Token {
+                        token: TokenType::LParen,
+                        ..
+                    }) => {
+                        tokens.next().unwrap();
                         let mut token = throw_newline(tokens.next())?;
                         let radix = match token.token {
                             TokenType::Bin => {
                                 token = throw_newline(tokens.next())?;
                                 Radix::Bin
-                            },
+                            }
                             TokenType::Oct => {
                                 token = throw_newline(tokens.next())?;
                                 Radix::Oct
-                            },
+                            }
                             TokenType::Hex => {
                                 token = throw_newline(tokens.next())?;
                                 Radix::Hex
-                            },
-                            TokenType::Number => {
-                                Radix::Dec
-                            },
-                            _ => unreachable!()
+                            }
+                            TokenType::Number => Radix::Dec,
+                            _ => unreachable!(),
                         };
 
                         let value = parse_number(token, radix)?;
                         token = throw_newline(tokens.next())?;
                         match token.token {
                             TokenType::RParen => {
-                                if let Some(Token {token: TokenType::CommaY, ..}) = tokens.peek() {
+                                if let Some(Token {
+                                    token: TokenType::CommaY,
+                                    ..
+                                }) = tokens.peek()
+                                {
                                     tokens.next();
                                     instructions.push(InterOpCode {
                                         symbol: ins_symbol,
                                         instruct: ins,
                                         ins_addr,
-                                        addr: InterAddr::Addr(AddressType::IndirectY, Some(value))
+                                        addr: InterAddr::Addr(AddressType::IndirectY, Some(value)),
                                     });
                                     ins_addr += 2;
                                 } else {
@@ -258,7 +294,7 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                                         symbol: ins_symbol,
                                         instruct: ins,
                                         ins_addr,
-                                        addr: InterAddr::Addr(AddressType::Indirect, Some(value))
+                                        addr: InterAddr::Addr(AddressType::Indirect, Some(value)),
                                     });
                                     ins_addr += 3;
                                 }
@@ -270,58 +306,65 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                                         symbol: ins_symbol,
                                         instruct: ins,
                                         ins_addr,
-                                        addr: InterAddr::Addr(AddressType::IndirectX, Some(value))
+                                        addr: InterAddr::Addr(AddressType::IndirectX, Some(value)),
                                     });
                                     ins_addr += 2;
                                 } else {
-                                    return Err(AsmError::new("Unexpected Token", Some(token.symbol)))
+                                    return Err(AsmError::new(
+                                        "Unexpected Token",
+                                        Some(token.symbol),
+                                    ));
                                 }
-                            },
-                            _ => return Err(AsmError::new("Unexpected Token", Some(token.symbol)))
+                            }
+                            _ => return Err(AsmError::new("Unexpected Token", Some(token.symbol))),
                         }
                         state = PState::Default;
-                    },
-                    Some(Token {token: TokenType::Bin | TokenType::Hex | TokenType::Oct, ..}) => {
-                        let mut token = throw_newline(tokens.next())?; 
+                    }
+                    Some(Token {
+                        token: TokenType::Bin | TokenType::Hex | TokenType::Oct,
+                        ..
+                    }) => {
+                        let mut token = throw_newline(tokens.next())?;
                         let radix = match token.token {
                             TokenType::Bin => Radix::Bin,
                             TokenType::Oct => Radix::Oct,
                             TokenType::Hex => Radix::Hex,
-                            _ => unreachable!()
+                            _ => unreachable!(),
                         };
 
                         token = throw_newline(tokens.next())?;
-                        state = PState::PostNumber(
-                            ins_symbol,
-                            ins,
-                            parse_number(token, radix)?
-                        );
-                    },
-                    Some(Token {token: TokenType::Number, ..}) => {
-                        let token = throw_newline(tokens.next())?; 
-                        state = PState::PostNumber(
-                            ins_symbol,
-                            ins,
-                            parse_number(token, Radix::Dec)?
-                        );
-                    },
-                    Some(token @ Token {token: TokenType::Identifier, ..}) => {
+                        state = PState::PostNumber(ins_symbol, ins, parse_number(token, radix)?);
+                    }
+                    Some(Token {
+                        token: TokenType::Number,
+                        ..
+                    }) => {
+                        let token = throw_newline(tokens.next())?;
+                        state =
+                            PState::PostNumber(ins_symbol, ins, parse_number(token, Radix::Dec)?);
+                    }
+                    Some(
+                        token @ Token {
+                            token: TokenType::Identifier,
+                            ..
+                        },
+                    ) => {
                         if is_keyword(token.symbol.text.as_str()) {
                             instructions.push(InterOpCode {
                                 symbol: ins_symbol,
                                 instruct: ins,
                                 ins_addr,
-                                addr: InterAddr::Addr(AddressType::Impl, None)
+                                addr: InterAddr::Addr(AddressType::Impl, None),
                             });
                             ins_addr += 1;
                         } else {
-                            let token = throw_newline(tokens.next())?; 
+                            let token = throw_newline(tokens.next())?;
                             let is_rel = ins.get_op_code(&AddressType::Relative).is_some();
                             instructions.push(InterOpCode {
                                 symbol: ins_symbol,
                                 instruct: ins,
                                 ins_addr,
-                                addr: InterAddr::Label(token.symbol)
+                                addr: InterAddr::Label(token.symbol),
                             });
                             if !is_rel {
                                 ins_addr += 1;
@@ -330,13 +373,17 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                         }
                         state = PState::Default;
                     }
-                    None | Some(Token {token: TokenType::NewLine, ..}) => {
+                    None
+                    | Some(Token {
+                        token: TokenType::NewLine,
+                        ..
+                    }) => {
                         tokens.next();
                         instructions.push(InterOpCode {
                             symbol: ins_symbol,
                             instruct: ins,
                             ins_addr,
-                            addr: InterAddr::Addr(AddressType::Impl, None)
+                            addr: InterAddr::Addr(AddressType::Impl, None),
                         });
                         ins_addr += 1;
                         state = PState::Default;
@@ -349,13 +396,16 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
             PState::PostNumber(ins_symbol, ins, value) => {
                 let curr_token = tokens.peek();
                 match curr_token {
-                    Some(Token {token: TokenType::CommaX, ..}) => {
+                    Some(Token {
+                        token: TokenType::CommaX,
+                        ..
+                    }) => {
                         if value.long {
                             instructions.push(InterOpCode {
                                 symbol: ins_symbol,
                                 instruct: ins,
                                 ins_addr,
-                                addr: InterAddr::Addr(AddressType::AbsoluteX, Some(value))
+                                addr: InterAddr::Addr(AddressType::AbsoluteX, Some(value)),
                             });
                             ins_addr += 3;
                         } else {
@@ -363,19 +413,22 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                                 symbol: ins_symbol,
                                 instruct: ins,
                                 ins_addr,
-                                addr: InterAddr::Addr(AddressType::ZeroPageX, Some(value))
+                                addr: InterAddr::Addr(AddressType::ZeroPageX, Some(value)),
                             });
                             ins_addr += 2;
                         }
                         tokens.next();
                     }
-                    Some(Token {token: TokenType::CommaY, ..}) => {
+                    Some(Token {
+                        token: TokenType::CommaY,
+                        ..
+                    }) => {
                         if value.long {
                             instructions.push(InterOpCode {
                                 symbol: ins_symbol,
                                 instruct: ins,
                                 ins_addr,
-                                addr: InterAddr::Addr(AddressType::AbsoluteY, Some(value))
+                                addr: InterAddr::Addr(AddressType::AbsoluteY, Some(value)),
                             });
                             ins_addr += 3;
                         } else {
@@ -383,19 +436,19 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                                 symbol: ins_symbol,
                                 instruct: ins,
                                 ins_addr,
-                                addr: InterAddr::Addr(AddressType::ZeroPageY, Some(value))
+                                addr: InterAddr::Addr(AddressType::ZeroPageY, Some(value)),
                             });
                             ins_addr += 2;
                         }
                         tokens.next();
-                    },
+                    }
                     _ => {
                         if value.long {
                             instructions.push(InterOpCode {
                                 symbol: ins_symbol,
                                 instruct: ins,
                                 ins_addr,
-                                addr: InterAddr::Addr(AddressType::Absolute, Some(value))
+                                addr: InterAddr::Addr(AddressType::Absolute, Some(value)),
                             });
                             ins_addr += 3;
                         } else {
@@ -403,14 +456,14 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                                 symbol: ins_symbol,
                                 instruct: ins,
                                 ins_addr,
-                                addr: InterAddr::Addr(AddressType::ZeroPage, Some(value))
+                                addr: InterAddr::Addr(AddressType::ZeroPage, Some(value)),
                             });
                             ins_addr += 2;
                         }
                     }
-                } 
+                }
                 state = PState::Default;
-            },
+            }
         }
     }
 
@@ -422,11 +475,14 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
             InterAddr::Label(label) => {
                 let label_addr = match labels.get(&label.text) {
                     Some(x) => Ok(*x),
-                    None => Err(AsmError::new(&format!("Undefined label: {label:?}"), None)) 
+                    None => Err(AsmError::new(&format!("Undefined label: {label:?}"), None)),
                 }?;
                 if let Some(op_code) = op.instruct.get_op_code(&AddressType::Absolute) {
                     if label_addr > u16::MAX {
-                        return Err(AsmError::new(&format!("Absolute address doesnt fit in u16: {label_addr}"), Some(label)))
+                        return Err(AsmError::new(
+                            &format!("Absolute address doesnt fit in u16: {label_addr}"),
+                            Some(label),
+                        ));
                     }
                     let full_addr = label_addr;
                     let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
@@ -436,62 +492,93 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                     let diff = (label_addr as i32) - (op.ins_addr as i32) - 2;
                     let addr = match i8::try_from(diff) {
                         Ok(val) => val as u8,
-                        Err(_) => return Err(AsmError::new(&format!("Relative address doesnt fit in i8: {diff}"), Some(label)))
+                        Err(_) => {
+                            return Err(AsmError::new(
+                                &format!("Relative address doesnt fit in i8: {diff}"),
+                                Some(label),
+                            ))
+                        }
                     };
                     result.extend_from_slice(&[op_code, addr]);
                 } else {
-                    return Err(AsmError::new("Instruction doesn't allow this type of addressing", Some(op.symbol)));
+                    return Err(AsmError::new(
+                        "Instruction doesn't allow this type of addressing",
+                        Some(op.symbol),
+                    ));
                 }
-            },
-            InterAddr::Addr(addr, value) => {
-                match addr {
-                    AddressType::Immediate |
-                    AddressType::IndirectX | AddressType::IndirectY |
-                    AddressType::ZeroPage | AddressType::ZeroPageX | AddressType::ZeroPageY => {
-                        if let Some(value) = value {
-                            let op_code = match op.instruct.get_op_code(&addr) {
-                                Some(val) => val,
-                                None => return Err(AsmError::new(&format!("Invalid addres type for instruction {}", op.symbol.text), Some(value.symbol)))
-                            };
-                            result.extend_from_slice(&[op_code, value.value as u8]);
-                        } else {
-                            return Err(AsmError::new("Missing value", Some(op.symbol)))
-                        }
-                    },
-                    AddressType::Impl | AddressType::Accumulator => {
-                        if let Some(value) = value {
-                            return Err(AsmError::new("Unexpected value", Some(value.symbol)))
-                        } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Impl) {
-                            result.extend_from_slice(&[op_code]);
-                        } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Accumulator) {
-                            result.extend_from_slice(&[op_code]);
-                        } else {
-                            return Err(AsmError::new(&format!("Instruction \"{:?}\" needs an address", op.instruct), Some(op.symbol)))
-                        }
-                    },
-                    AddressType::Indirect |
-                    AddressType::Absolute | AddressType::AbsoluteX | AddressType::AbsoluteY => {
-                        if let Some(value) = value {
-                            let op_code = match op.instruct.get_op_code(&addr) {
-                                Some(val) => val,
-                                None => return Err(AsmError::new(&format!("Invalid addres type for instruction {}", op.symbol.text), Some(value.symbol)))
-                            };
-                            let op_addr = value.value;
-                            if op_addr > u16::MAX as i32 {
-                                panic!("Absolute address doesnt fit in u16: {op_addr}");
+            }
+            InterAddr::Addr(addr, value) => match addr {
+                AddressType::Immediate
+                | AddressType::IndirectX
+                | AddressType::IndirectY
+                | AddressType::ZeroPage
+                | AddressType::ZeroPageX
+                | AddressType::ZeroPageY => {
+                    if let Some(value) = value {
+                        let op_code = match op.instruct.get_op_code(&addr) {
+                            Some(val) => val,
+                            None => {
+                                return Err(AsmError::new(
+                                    &format!(
+                                        "Invalid addres type for instruction {}",
+                                        op.symbol.text
+                                    ),
+                                    Some(value.symbol),
+                                ))
                             }
-                            let full_addr = op_addr as u16;
-                            let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
-                            let high: u8 = (full_addr & 0x00FF) as u8;
-                            result.extend_from_slice(&[op_code, high, low]);
-                        } else {
-                            return Err(AsmError::new("Missing value", Some(op.symbol)))
-                        }
-                    },
-                    _ => unimplemented!("{:?}", addr),
+                        };
+                        result.extend_from_slice(&[op_code, value.value as u8]);
+                    } else {
+                        return Err(AsmError::new("Missing value", Some(op.symbol)));
+                    }
                 }
+                AddressType::Impl | AddressType::Accumulator => {
+                    if let Some(value) = value {
+                        return Err(AsmError::new("Unexpected value", Some(value.symbol)));
+                    } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Impl) {
+                        result.extend_from_slice(&[op_code]);
+                    } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Accumulator)
+                    {
+                        result.extend_from_slice(&[op_code]);
+                    } else {
+                        return Err(AsmError::new(
+                            &format!("Instruction \"{:?}\" needs an address", op.instruct),
+                            Some(op.symbol),
+                        ));
+                    }
+                }
+                AddressType::Indirect
+                | AddressType::Absolute
+                | AddressType::AbsoluteX
+                | AddressType::AbsoluteY => {
+                    if let Some(value) = value {
+                        let op_code = match op.instruct.get_op_code(&addr) {
+                            Some(val) => val,
+                            None => {
+                                return Err(AsmError::new(
+                                    &format!(
+                                        "Invalid addres type for instruction {}",
+                                        op.symbol.text
+                                    ),
+                                    Some(value.symbol),
+                                ))
+                            }
+                        };
+                        let op_addr = value.value;
+                        if op_addr > u16::MAX as i32 {
+                            panic!("Absolute address doesnt fit in u16: {op_addr}");
+                        }
+                        let full_addr = op_addr as u16;
+                        let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
+                        let high: u8 = (full_addr & 0x00FF) as u8;
+                        result.extend_from_slice(&[op_code, high, low]);
+                    } else {
+                        return Err(AsmError::new("Missing value", Some(op.symbol)));
+                    }
+                }
+                _ => unimplemented!("{:?}", addr),
             },
         };
-    };
-    return Ok(result)
+    }
+    return Ok(result);
 }

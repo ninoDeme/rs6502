@@ -1,6 +1,6 @@
-use iced::widget::{button, checkbox, column, text, Column, row, Row, scrollable, container};
+use iced::alignment::Vertical;
+use iced::widget::{button, checkbox, column, container, row, scrollable, text, Column, Row};
 use iced::Color;
-use iced::alignment::{Vertical};
 
 mod asm;
 mod instruct;
@@ -8,7 +8,7 @@ mod m6502;
 mod memory;
 
 use crate::asm::{assemble, read_lines};
-use crate::m6502::{State, step};
+use crate::m6502::{step, State};
 use crate::memory::{DefaultMemory, Memory};
 
 use std::rc::Rc;
@@ -23,7 +23,7 @@ struct Machine {
     last_states: Vec<Rc<State>>,
     curr_page: u8,
     follow_ab: bool,
-    follow_pc: bool
+    follow_pc: bool,
 }
 
 impl Default for Machine {
@@ -32,7 +32,10 @@ impl Default for Machine {
 
         let mut memory = DefaultMemory::new();
 
-        let lines: Vec<String> = read_lines("example2.asm").unwrap().map(|l| l.unwrap()).collect();
+        let lines: Vec<String> = read_lines("example2.asm")
+            .unwrap()
+            .map(|l| l.unwrap())
+            .collect();
         let res = assemble(lines, 0x0000);
 
         memory.set(0xFFFC, 0x00);
@@ -54,25 +57,43 @@ impl Default for Machine {
     }
 }
 
-fn page_widget(memory: &dyn Memory, curr_page: u8, ab: u16, pc: u16) -> Column<'_, Message>{
-    let mut page_col = column![
-        row![
-            button("-10").on_press_maybe(if curr_page >= 0x10 {Some(Message::ChangePage(-0x10))} else {None}),
-            button("-1").on_press_maybe(if curr_page >= 0x01 {Some(Message::ChangePage(-0x1))} else {None}),
-            text(format!("{:02x}", curr_page)),
-            button("+1").on_press_maybe(if curr_page <= (0xFF - 0x01) {Some(Message::ChangePage(0x1))} else {None}),
-            button("+10").on_press_maybe(if curr_page <= (0xFF - 0x10) {Some(Message::ChangePage(0x10))} else {None}),
-        ].spacing(4).align_y(Vertical::Center),
-    ].spacing(4);
+fn page_widget(memory: &dyn Memory, curr_page: u8, ab: u16, pc: u16) -> Column<'_, Message> {
+    let mut page_col = column![row![
+        button("-10").on_press_maybe(if curr_page >= 0x10 {
+            Some(Message::ChangePage(-0x10))
+        } else {
+            None
+        }),
+        button("-1").on_press_maybe(if curr_page >= 0x01 {
+            Some(Message::ChangePage(-0x1))
+        } else {
+            None
+        }),
+        text(format!("{:02x}", curr_page)),
+        button("+1").on_press_maybe(if curr_page <= (0xFF - 0x01) {
+            Some(Message::ChangePage(0x1))
+        } else {
+            None
+        }),
+        button("+10").on_press_maybe(if curr_page <= (0xFF - 0x10) {
+            Some(Message::ChangePage(0x10))
+        } else {
+            None
+        }),
+    ]
+    .spacing(4)
+    .align_y(Vertical::Center),]
+    .spacing(4);
     for h in 0x00..0x10 {
         let mut row = Row::new().spacing(4);
         for l in 0x00..0x10 {
             let add = (h * 0x10) + l + ((curr_page as u16) * 0x0100);
             let mut container = container(text(format!("{:02x}", memory.get(add))));
             if add == ab {
-                container = container.style(|_| container::background(Color::from_rgba8(255, 255, 150, 1.0)))
+                container = container
+                    .style(|_| container::background(Color::from_rgba8(255, 255, 150, 1.0)))
             }
-            row =  row.push(container);
+            row = row.push(container);
         }
         page_col = page_col.push(row);
     }
@@ -87,7 +108,7 @@ enum Message {
     ChangePage(i8),
     ToggleReset(bool),
     ToggleFollowAB(bool),
-    ToggleFollowPC(bool)
+    ToggleFollowPC(bool),
 }
 
 impl Machine {
@@ -106,7 +127,7 @@ impl Machine {
                     self.last_states.push(self.state.clone().into());
                     step(&mut self.state);
                 }
-            },
+            }
             Message::Step => {
                 self.last_states.push(self.state.clone().into());
                 if self.state.clock1 {
@@ -119,21 +140,21 @@ impl Machine {
                 }
                 self.last_states.push(self.state.clone().into());
                 step(&mut self.state);
-            },
+            }
             Message::ClearStates => {
                 self.last_states.clear();
-            },
+            }
             Message::ToggleReset(is_checked) => {
                 self.state.res = is_checked;
-            },
+            }
             Message::ToggleFollowAB(is_checked) => {
                 self.follow_ab = is_checked;
                 self.follow_pc = false;
-            },
+            }
             Message::ToggleFollowPC(is_checked) => {
                 self.follow_ab = false;
                 self.follow_pc = is_checked;
-            },
+            }
             Message::ChangePage(ammount) => {
                 self.curr_page = self.curr_page.checked_add_signed(ammount).unwrap();
             }
@@ -151,19 +172,32 @@ impl Machine {
         row![
             column![
                 row![
-                    button("Step").on_press_maybe(if self.state.clock1 {Some(Message::Step)} else {None}),
+                    button("Step").on_press_maybe(if self.state.clock1 {
+                        Some(Message::Step)
+                    } else {
+                        None
+                    }),
                     button("Half step").on_press(Message::HalfStep),
                     button("Clear states").on_press(Message::ClearStates),
                 ],
                 checkbox("Reset signal", self.state.res).on_toggle(Message::ToggleReset),
                 row![
-                    checkbox("Follow address bus", self.follow_ab).on_toggle(Message::ToggleFollowAB),
-                    checkbox("Follow program counter", self.follow_pc).on_toggle(Message::ToggleFollowPC),
-                ].spacing(4),
-                page_widget(&self.memory, self.curr_page, self.state.ab, self.state.registers.pc),
+                    checkbox("Follow address bus", self.follow_ab)
+                        .on_toggle(Message::ToggleFollowAB),
+                    checkbox("Follow program counter", self.follow_pc)
+                        .on_toggle(Message::ToggleFollowPC),
+                ]
+                .spacing(4),
+                page_widget(
+                    &self.memory,
+                    self.curr_page,
+                    self.state.ab,
+                    self.state.registers.pc
+                ),
             ],
             scrollable(self.state_table())
-        ].spacing(16)
+        ]
+        .spacing(16)
     }
     fn state_table(&self) -> Row<'static, Message> {
         let mut new_vec = self.last_states.clone();
@@ -173,39 +207,83 @@ impl Machine {
         const VERT_SPACING: u16 = 4;
         row![
             column![text("Cycle")]
-                .extend(input.clone().map(|state| text(format!("{}", state.total_cycles)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{}", state.total_cycles)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("Program")]
-                .extend(input.clone().map(|state| text(format!("{:04x}", state.registers.pc)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:04x}", state.registers.pc)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("Acc")]
-                .extend(input.clone().map(|state| text(format!("{:02x}", state.registers.ac)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:02x}", state.registers.ac)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("X")]
-                .extend(input.clone().map(|state| text(format!("{:02x}", state.registers.xr)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:02x}", state.registers.xr)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("Y")]
-                .extend(input.clone().map(|state| text(format!("{:02x}", state.registers.yr)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:02x}", state.registers.yr)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("Status")]
-                .extend(input.clone().map(|state| text(state.registers.fmt_status()).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(state.registers.fmt_status()).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("Stack")]
-                .extend(input.clone().map(|state| text(format!("{:02x}", state.registers.sp)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:02x}", state.registers.sp)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("State")]
-                .extend(input.clone().map(|state| text(format!("{:?}", state.timing)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:?}", state.timing)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("Next")]
-                .extend(input.clone().map(|state| text(format!("{:?}", state.next_timing)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:?}", state.next_timing)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("Address")]
-                .extend(input.clone().map(|state| text(format!("{:04x}", state.ab)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:04x}", state.ab)).into())
+                )
                 .spacing(VERT_SPACING),
             column![text("Data")]
-                .extend(input.clone().map(|state| text(format!("{:02x}", state.db)).into()))
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(format!("{:02x}", state.db)).into())
+                )
                 .spacing(VERT_SPACING),
-        ].spacing(8)
+        ]
+        .spacing(8)
     }
-
 }

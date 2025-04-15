@@ -1,4 +1,4 @@
-use crate::asm::{Symbol, Pos};
+use crate::asm::{Pos, Symbol};
 
 #[derive(Debug)]
 pub enum LState {
@@ -10,7 +10,7 @@ pub enum LState {
 #[derive(Debug, Clone)]
 pub struct Token {
     pub symbol: Symbol,
-    pub token: TokenType
+    pub token: TokenType,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -26,7 +26,7 @@ pub enum TokenType {
     Hex,
     Bin,
     Oct,
-    NewLine
+    NewLine,
 }
 
 pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
@@ -34,16 +34,10 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
     let mut tokens: Vec<Token> = vec![Token {
         token: TokenType::NewLine,
         symbol: Symbol {
-            start: Pos {
-                line: 0,
-                col: 0
-            },
-            end: Pos {
-                line: 0,
-                col: 0
-            },
-            text: String::from("\n")
-        }
+            start: Pos { line: 0, col: 0 },
+            end: Pos { line: 0, col: 0 },
+            text: String::from("\n"),
+        },
     }];
 
     for (line_i, line) in lines {
@@ -56,117 +50,150 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                 char = None;
             }
             match state {
-                LState::Default => {
-                    match char {
-                        Some(':') => {
-                            tokens.push(Token {
-                                token: TokenType::Colon,
-                                symbol: Symbol::new(line_i, col_i, String::from(':'))
-                            });
-                            char = chars.next();
-                            col_i += 1;
-                        }
-                        Some('#') => {
-                            tokens.push(Token {
-                                token: TokenType::Hash,
-                                symbol: Symbol::new(line_i, col_i, String::from('#'))
-                            });
-                            char = chars.next();
-                            col_i += 1;
-                        }
-                        Some('$') => {
-                            tokens.push(Token {
-                                token: TokenType::Hex,
-                                symbol: Symbol::new(line_i, col_i, String::from('$'))
-                            });
-                            char = chars.next();
-                            col_i += 1;
-                            state = LState::Number(Pos { line: line_i, col: col_i }, String::from(""));
-                        }
-                        Some('@') => {
-                            tokens.push(Token {
-                                token: TokenType::Oct,
-                                symbol: Symbol::new(line_i, col_i, String::from('@'))
-                            });
-                            char = chars.next();
-                            col_i += 1;
-                            state = LState::Number(Pos { line: line_i, col: col_i }, String::from(""));
-                        }
-                        Some('%') => {
-                            tokens.push(Token {
-                                token: TokenType::Bin,
-                                symbol: Symbol::new(line_i, col_i, String::from('%'))
-                            });
-                            char = chars.next();
-                            col_i += 1;
-                            state = LState::Number(Pos { line: line_i, col: col_i }, String::from(""));
-                        }
-                        Some('(') => {
-                            tokens.push(Token {
-                                token: TokenType::LParen,
-                                symbol: Symbol::new(line_i, col_i, String::from('('))
-                            });
-                            char = chars.next();
-                            col_i += 1;
-                        }
-                        Some(')') => {
-                            tokens.push(Token {
-                                token: TokenType::RParen,
-                                symbol: Symbol::new(line_i, col_i, String::from(')'))
-                            });
-                            char = chars.next();
-                            col_i += 1;
-                        }
-                        Some(',') => {
-                            match chars.next() {
-                                Some(txt @ 'x') | Some(txt @ 'X') => {
-                                    tokens.push(Token {
-                                        token: TokenType::CommaX,
-                                        symbol: Symbol::new(line_i, col_i, format!(",{txt}"))
-                                    });
-                                    char = chars.next();
-                                    col_i += 2;
-                                }
-                                Some(txt @ 'y') | Some(txt @ 'Y') => {
-                                    tokens.push(Token {
-                                        token: TokenType::CommaY,
-                                        symbol: Symbol::new(line_i, col_i, format!(",{txt}"))
-                                    });
-                                    char = chars.next();
-                                    col_i += 2;
-                                }
-                                t => {
-                                    panic!("Invalid char at pos {line_i}:{col_i} '{}'", t.map_or(String::from("EOF"), String::from));
-                                }
-                            };
-                        }
-                        Some(curr_char) if curr_char.is_whitespace() => {
-                            char = chars.next();
-                            col_i += 1;
-                        }
-                        Some(curr_char @ '0'..='9') => {
-                            state = LState::Number(Pos { line: line_i, col: col_i }, String::from(curr_char));
-                            char = chars.next();
-                            col_i += 1;
-                        }
-                        Some(curr_char @ ('a'..='z' | 'A'..='Z' | '_')) => {
-                            state = LState::Identifier(Pos { line: line_i, col: col_i }, String::from(curr_char));
-                            char = chars.next();
-                            col_i += 1;
-                        }
-                        None => {
-                            break;
-                        }
-                        Some(curr_char) => {
-                            panic!("Invalid char at pos {line_i}:{col_i} '{}'", curr_char);
-                        }
+                LState::Default => match char {
+                    Some(':') => {
+                        tokens.push(Token {
+                            token: TokenType::Colon,
+                            symbol: Symbol::new(line_i, col_i, String::from(':')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
                     }
-                }
-                LState::Identifier(_, ref mut text) if matches!(char, Some('a'..='z' | 'A'..='Z' | '_' | '0'..='9')) => {
+                    Some('#') => {
+                        tokens.push(Token {
+                            token: TokenType::Hash,
+                            symbol: Symbol::new(line_i, col_i, String::from('#')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
+                    }
+                    Some('$') => {
+                        tokens.push(Token {
+                            token: TokenType::Hex,
+                            symbol: Symbol::new(line_i, col_i, String::from('$')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
+                        state = LState::Number(
+                            Pos {
+                                line: line_i,
+                                col: col_i,
+                            },
+                            String::from(""),
+                        );
+                    }
+                    Some('@') => {
+                        tokens.push(Token {
+                            token: TokenType::Oct,
+                            symbol: Symbol::new(line_i, col_i, String::from('@')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
+                        state = LState::Number(
+                            Pos {
+                                line: line_i,
+                                col: col_i,
+                            },
+                            String::from(""),
+                        );
+                    }
+                    Some('%') => {
+                        tokens.push(Token {
+                            token: TokenType::Bin,
+                            symbol: Symbol::new(line_i, col_i, String::from('%')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
+                        state = LState::Number(
+                            Pos {
+                                line: line_i,
+                                col: col_i,
+                            },
+                            String::from(""),
+                        );
+                    }
+                    Some('(') => {
+                        tokens.push(Token {
+                            token: TokenType::LParen,
+                            symbol: Symbol::new(line_i, col_i, String::from('(')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
+                    }
+                    Some(')') => {
+                        tokens.push(Token {
+                            token: TokenType::RParen,
+                            symbol: Symbol::new(line_i, col_i, String::from(')')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
+                    }
+                    Some(',') => {
+                        match chars.next() {
+                            Some(txt @ 'x') | Some(txt @ 'X') => {
+                                tokens.push(Token {
+                                    token: TokenType::CommaX,
+                                    symbol: Symbol::new(line_i, col_i, format!(",{txt}")),
+                                });
+                                char = chars.next();
+                                col_i += 2;
+                            }
+                            Some(txt @ 'y') | Some(txt @ 'Y') => {
+                                tokens.push(Token {
+                                    token: TokenType::CommaY,
+                                    symbol: Symbol::new(line_i, col_i, format!(",{txt}")),
+                                });
+                                char = chars.next();
+                                col_i += 2;
+                            }
+                            t => {
+                                panic!(
+                                    "Invalid char at pos {line_i}:{col_i} '{}'",
+                                    t.map_or(String::from("EOF"), String::from)
+                                );
+                            }
+                        };
+                    }
+                    Some(curr_char) if curr_char.is_whitespace() => {
+                        char = chars.next();
+                        col_i += 1;
+                    }
+                    Some(curr_char @ '0'..='9') => {
+                        state = LState::Number(
+                            Pos {
+                                line: line_i,
+                                col: col_i,
+                            },
+                            String::from(curr_char),
+                        );
+                        char = chars.next();
+                        col_i += 1;
+                    }
+                    Some(curr_char @ ('a'..='z' | 'A'..='Z' | '_')) => {
+                        state = LState::Identifier(
+                            Pos {
+                                line: line_i,
+                                col: col_i,
+                            },
+                            String::from(curr_char),
+                        );
+                        char = chars.next();
+                        col_i += 1;
+                    }
+                    None => {
+                        break;
+                    }
+                    Some(curr_char) => {
+                        panic!("Invalid char at pos {line_i}:{col_i} '{}'", curr_char);
+                    }
+                },
+                LState::Identifier(_, ref mut text)
+                    if matches!(char, Some('a'..='z' | 'A'..='Z' | '_' | '0'..='9')) =>
+                {
                     text.push(char.unwrap());
                     char = chars.next();
                     col_i += 1;
-                },
+                }
                 LState::Identifier(start, text) => {
                     tokens.push(Token {
                         token: TokenType::Identifier,
@@ -174,21 +201,26 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                             start,
                             end: Pos {
                                 line: line_i,
-                                col: col_i
+                                col: col_i,
                             },
-                            text: text.to_string()
-                        }
+                            text: text.to_string(),
+                        },
                     });
                     state = LState::Default;
                 }
-                LState::Number(_, ref mut text) if char.is_some_and(|c| c.is_ascii_alphanumeric()) => {
+                LState::Number(_, ref mut text)
+                    if char.is_some_and(|c| c.is_ascii_alphanumeric()) =>
+                {
                     text.push(char.unwrap());
                     char = chars.next();
                     col_i += 1;
-                } 
+                }
                 LState::Number(start, text) => {
                     if text.is_empty() {
-                        panic!("Invalid char at pos {line_i}:{col_i}, expected number, found {}", char.map_or(String::from("NULL"), String::from));
+                        panic!(
+                            "Invalid char at pos {line_i}:{col_i}, expected number, found {}",
+                            char.map_or(String::from("NULL"), String::from)
+                        );
                     }
                     tokens.push(Token {
                         token: TokenType::Number,
@@ -196,34 +228,32 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                             start,
                             end: Pos {
                                 line: line_i,
-                                col: col_i
+                                col: col_i,
                             },
-                            text: text.to_string()
-                        }
+                            text: text.to_string(),
+                        },
                     });
                     state = LState::Default;
-                }
-                // _ => {
-                //     panic!("Not Implemented");
-                // }
+                } // _ => {
+                  //     panic!("Not Implemented");
+                  // }
             }
-        };
+        }
 
         tokens.push(Token {
             token: TokenType::NewLine,
             symbol: Symbol {
                 start: Pos {
                     line: line_i,
-                    col: col_i
+                    col: col_i,
                 },
                 end: Pos {
                     line: line_i + 1,
-                    col: col_i
+                    col: col_i,
                 },
-                text: String::from("\n")
-            }
+                text: String::from("\n"),
+            },
         });
     }
     return tokens;
 }
-

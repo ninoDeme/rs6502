@@ -12,9 +12,7 @@ pub struct DefaultMemory {
 
 impl DefaultMemory {
     pub fn new() -> Self {
-        DefaultMemory {
-            memory: [0; 65536]
-        }
+        DefaultMemory { memory: [0; 65536] }
     }
 }
 
@@ -26,4 +24,3 @@ impl Memory for DefaultMemory {
         self.memory[addr as usize] = value;
     }
 }
-
