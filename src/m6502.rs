@@ -268,6 +268,9 @@ pub fn step(state: &mut State) {
 
 fn step1(state: &mut State) {
     state.timing = state.next_timing.clone();
+    state.next_timing = TimingState::clear();
+
+    state.rw = false;
     if state.timing.t2 {
         if state.irq || state.nmi {
             state.next_timing = TimingState::clear();
@@ -291,11 +294,9 @@ fn step1(state: &mut State) {
             Instruct::BRK => {
                 if state.timing.t6 {
                     state.ab = 0xFFFC;
-                    state.rw = true;
                 };
                 if state.timing.t0 {
                     state.ab = 0xFFFD;
-                    state.rw = true;
                 };
             }
             _ => unimplemented!(),
@@ -316,14 +317,14 @@ fn step1(state: &mut State) {
         AddressType::ZeroPage => {
             match instruction {
                 Instruct::ADC => {
-                    if state.timing.t1 {
-                        state.registers.pc = state.registers.pc + 3;
-                    };
                     if state.timing.t2 {
                         state.ab = state.registers.pc + 1;
                     };
                     if state.timing.t3 {
-                        state.ab = state.pd;
+                        state.ab = state.pd as u16;
+                    };
+                    if state.timing.t1 {
+                        state.registers.pc = state.registers.pc + 2;
                     };
                 }
                 Instruct::LDA => {
@@ -357,8 +358,6 @@ fn step1(state: &mut State) {
 fn step2(state: &mut State) {
     state.pd = state.db;
 
-    let prefetch = state.timing.t1;
-
     let op_code = state.ir;
     let InstructionInfo {
         instruction,
@@ -367,62 +366,31 @@ fn step2(state: &mut State) {
         extra_cycles,
     } = Instruct::from_op_code(op_code).unwrap();
     match mode {
-        AddressType::Impl => {
-            match instruction {
-                Instruct::BRK => {
-                    if state.timing.t2 {
-                        if state.registers.sp & BREAK != BREAK {
-                            state.next_timing = TimingState::clear();
-                            state.next_timing.t3 = true;
-                        } else {
-                            state.next_timing = TimingState::clear();
-                            // state.timing.t0 = true;
-                            state.next_timing.t3 = true;
-                        };
-                    } else if state.timing.t3 {
-                        state.ir = 0;
-                        state.registers.sp = 0;
-                        state.registers.pc = 0;
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t4 = true;
-                    } else if state.timing.t4 {
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t5 = true;
-                    } else if state.timing.t5 {
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t6 = true;
-                    } else if state.timing.t6 {
-                        state.registers.pc = state.db as u16;
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t0 = true;
-                    } else if state.timing.t0 {
-                        state.registers.pc = (state.db as u16) << 8;
-                        // state.registers.sp |= BREAK;
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t1 = true;
-                    }
+        AddressType::Impl => match instruction {
+            Instruct::BRK => {
+                if state.timing.t3 {
+                    state.ir = 0;
+                    state.registers.sp = 0;
+                    state.registers.pc = 0;
+                } else if state.timing.t6 {
+                    state.registers.pc = state.db as u16;
+                    state.next_timing.t0 = true;
+                } else if state.timing.t0 {
+                    state.registers.pc = (state.db as u16) << 8;
                 }
-                _ => unimplemented!(),
             }
-        }
+            _ => unimplemented!(),
+        },
         AddressType::Immediate => {
             match instruction {
                 Instruct::ADC => {
                     if state.timing.t2 {
                         ins_adc(state);
                     };
-                    if state.timing.t0 {
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t1 = true;
-                    };
                 }
                 Instruct::LDA => {
                     if state.timing.t2 {
                         state.registers.ac = state.pd;
-                    };
-                    if state.timing.t0 {
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t1 = true;
                     };
                 }
                 _ => unimplemented!(),
@@ -431,29 +399,19 @@ fn step2(state: &mut State) {
         AddressType::ZeroPage => {
             match instruction {
                 Instruct::ADC => {
-                    // if state.timing.t2 {
-                    // };
                     if state.timing.t3 {
                         ins_adc(state);
-                    };
-                    if state.timing.t0 {
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t1 = true;
+                        state.next_timing.t0 = true;
                     };
                 }
-                Instruct::STA => {
-                    if state.timing.t0 {
-                        state.next_timing = TimingState::clear();
-                        state.next_timing.t1 = true;
-                    };
-                }
+                Instruct::STA => {}
                 _ => unimplemented!(),
             };
         }
         _ => unimplemented!(),
     };
 
-    if prefetch {
+    if state.timing.t1 {
         let op_code = state.pd;
         let InstructionInfo {
             instruction,
@@ -465,6 +423,21 @@ fn step2(state: &mut State) {
         state.next_timing.t2 = true;
         if cycles == 2 {
             state.next_timing.t0 = true;
+        }
+    } else if !state.next_timing.t0 {
+        if state.timing.t2 {
+            state.next_timing.t3 = true;
+        } else if state.timing.t3 {
+            state.next_timing.t4 = true;
+        } else if state.timing.t4 {
+            state.next_timing.t5 = true;
+        } else if state.timing.t5 {
+            state.next_timing.t6 = true;
+        } else if state.timing.t6 {
+            // if the timing is not set manually by the instruction by this point the processor
+            // will enter an infinite loop, maybe add warning or loop detection here
+        } else if state.timing.t0 {
+            state.next_timing.t1 = true;
         }
     };
 }
