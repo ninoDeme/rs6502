@@ -6,14 +6,6 @@ edition = "2021"
 [dependencies]
 iced = "0.13.1"
 
-[[bin]]
-name = "rs6502asm"
-path = "src/assembler.rs"
-
-[[bin]]
-name = "rs6502ui"
-path = "src/gui.rs"
-
 [lints.clippy]
 needless_return = "allow"
 

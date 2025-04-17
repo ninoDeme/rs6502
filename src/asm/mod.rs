@@ -2,10 +2,11 @@ use std::fs::File;
 
 use std::io;
 use std::io::BufRead;
+use std::path::Path;
+use std::collections::BTreeMap;
 
 use crate::asm::lexer::lex;
 use crate::asm::parser::parse;
-use std::path::Path;
 pub mod lexer;
 pub mod parser;
 
@@ -58,11 +59,11 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn assemble(input: Vec<String>, entry_point: u16) -> Vec<u8> {
+pub fn assemble(input: Vec<String>) -> BTreeMap<u16, u8> {
     let tokens = lex(input.iter());
 
     // println!("{:?}", tokens);
-    let res = parse(tokens, entry_point);
+    let res = parse(tokens);
     match res {
         Ok(value) => {
             return value;

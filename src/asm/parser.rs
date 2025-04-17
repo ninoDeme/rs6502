@@ -1,7 +1,7 @@
 use crate::asm::lexer::{Token, TokenType};
 use crate::asm::{AsmError, Symbol};
 use crate::instruct::{AddressType, Instruct};
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
 #[derive(Debug)]
 enum InterAddr {
@@ -102,6 +102,14 @@ fn parse_number(token: Token, radix: Radix) -> Result<Value, AsmError> {
     });
 }
 
+fn b_ext(tree: &mut BTreeMap<u16, u8>, start: u16, values: &[u8]) -> () {
+    let mut i = start;
+    for val in values {
+        tree.insert(i, *val);
+        i += 1;
+    }
+}
+
 pub fn extend_tokens(tokens: Vec<Token>) -> Result<Vec<Token>, AsmError> {
     let mut tokens = tokens.into_iter().peekable();
     let mut defines: HashMap<String, Vec<Token>> = HashMap::new();
@@ -169,14 +177,14 @@ pub fn extend_tokens(tokens: Vec<Token>) -> Result<Vec<Token>, AsmError> {
     return Ok(new_tokens);
 }
 
-pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> {
+pub fn parse(tokens: Vec<Token>) -> Result<BTreeMap<u16, u8>, AsmError> {
     let mut tokens = extend_tokens(tokens)?.into_iter().peekable();
     let mut labels: HashMap<String, u16> = HashMap::new();
     let mut state = PState::Default;
 
     let mut instructions: Vec<InterOpCode> = vec![];
 
-    let mut ins_addr = entry_point;
+    let mut ins_addr = 0x0600;
     loop {
         match state {
             PState::Default => {
@@ -200,6 +208,9 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                         }
                         TokenType::NewLine => {
                             state = PState::Default;
+                        }
+                        TokenType::Dot => {
+                            unimplemented!()
                         }
                         _ => return Err(AsmError::new("Invalid token", Some(token.symbol))),
                     }
@@ -469,7 +480,7 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
 
     // print_instructions(&instructions);
 
-    let mut result: Vec<u8> = vec![];
+    let mut result: BTreeMap<u16, u8> = BTreeMap::new();
     for op in instructions.into_iter() {
         match op.addr {
             InterAddr::Label(label) => {
@@ -487,7 +498,7 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                     let full_addr = label_addr;
                     let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
                     let high: u8 = (full_addr & 0x00FF) as u8;
-                    result.extend_from_slice(&[op_code, high, low]);
+                    b_ext(&mut result, op.ins_addr, &[op_code, high, low]);
                 } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Relative) {
                     let diff = (label_addr as i32) - (op.ins_addr as i32) - 2;
                     let addr = match i8::try_from(diff) {
@@ -499,7 +510,7 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                             ))
                         }
                     };
-                    result.extend_from_slice(&[op_code, addr]);
+                    b_ext(&mut result, op.ins_addr, &[op_code, addr]);
                 } else {
                     return Err(AsmError::new(
                         "Instruction doesn't allow this type of addressing",
@@ -527,7 +538,8 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                                 ))
                             }
                         };
-                        result.extend_from_slice(&[op_code, value.value as u8]);
+
+                        b_ext(&mut result, op.ins_addr, &[op_code, value.value as u8]);
                     } else {
                         return Err(AsmError::new("Missing value", Some(op.symbol)));
                     }
@@ -536,10 +548,9 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                     if let Some(value) = value {
                         return Err(AsmError::new("Unexpected value", Some(value.symbol)));
                     } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Impl) {
-                        result.extend_from_slice(&[op_code]);
-                    } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Accumulator)
-                    {
-                        result.extend_from_slice(&[op_code]);
+                        b_ext(&mut result, op.ins_addr, &[op_code]);
+                    } else if let Some(op_code) = op.instruct.get_op_code(&AddressType::Accumulator) {
+                        b_ext(&mut result, op.ins_addr, &[op_code]);
                     } else {
                         return Err(AsmError::new(
                             &format!("Instruction \"{:?}\" needs an address", op.instruct),
@@ -571,7 +582,8 @@ pub fn parse(tokens: Vec<Token>, entry_point: u16) -> Result<Vec<u8>, AsmError> 
                         let full_addr = op_addr as u16;
                         let low: u8 = ((full_addr & 0xFF00) >> 8) as u8;
                         let high: u8 = (full_addr & 0x00FF) as u8;
-                        result.extend_from_slice(&[op_code, high, low]);
+
+                        b_ext(&mut result, op.ins_addr, &[op_code, high, low]);
                     } else {
                         return Err(AsmError::new("Missing value", Some(op.symbol)));
                     }

@@ -2,14 +2,9 @@ use iced::alignment::Vertical;
 use iced::widget::{button, checkbox, column, container, row, scrollable, text, Column, Row};
 use iced::Color;
 
-mod asm;
-mod instruct;
-mod m6502;
-mod memory;
-
-use crate::asm::{assemble, read_lines};
-use crate::m6502::{step, State};
-use crate::memory::{DefaultMemory, Memory};
+use rs6502::asm::{assemble, read_lines};
+use rs6502::m6502::{step, State};
+use rs6502::memory::{DefaultMemory, Memory};
 
 use std::rc::Rc;
 
@@ -36,15 +31,10 @@ impl Default for Machine {
             .unwrap()
             .map(|l| l.unwrap())
             .collect();
-        let res = assemble(lines, 0x0000);
+        let res = assemble(lines);
 
-        memory.set(0xFFFC, 0x00);
-        memory.set(0xFFFD, 0x06);
-
-        let mut i = 0;
-        for val in res {
-            memory.set(0x0600 + i, val);
-            i += 1;
+        for (key, val) in res {
+            memory.set(key, val);
         }
         Machine {
             state,

@@ -1,32 +1,22 @@
 use std::io;
 
-mod asm;
-mod instruct;
-mod m6502;
-mod memory;
-
-use crate::asm::{assemble, read_lines};
-use crate::m6502::{step, State};
-use crate::memory::{DefaultMemory, Memory};
+use rs6502::asm::{assemble, read_lines};
+use rs6502::m6502::{step, State};
+use rs6502::memory::{DefaultMemory, Memory};
 
 fn main() -> io::Result<()> {
     let mut state = State::new();
 
     let mut memory = DefaultMemory::new();
 
-    let lines: Vec<String> = read_lines("example2.asm")
+    let lines: Vec<String> = read_lines("example.asm")
         .unwrap()
         .map(|l| l.unwrap())
         .collect();
-    let res = assemble(lines, 0x0600);
+    let res = assemble(lines);
 
-    memory.set(0xFFFC, 0x00);
-    memory.set(0xFFFD, 0x00);
-
-    let mut i = 0;
-    for val in res {
-        memory.set(0x0600 + i, val);
-        i += 1;
+    for (key, val) in res {
+        memory.set(key, val);
     }
 
     step(&mut state);

@@ -27,6 +27,8 @@ pub enum TokenType {
     Bin,
     Oct,
     NewLine,
+    Dot,
+    Equals
 }
 
 pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
@@ -153,6 +155,22 @@ pub fn lex<'a>(input: impl Iterator<Item = &'a String>) -> Vec<Token> {
                                 );
                             }
                         };
+                    }
+                    Some('.') => {
+                        tokens.push(Token {
+                            token: TokenType::Dot,
+                            symbol: Symbol::new(line_i, col_i, String::from('.')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
+                    }
+                    Some('=') => {
+                        tokens.push(Token {
+                            token: TokenType::Equals,
+                            symbol: Symbol::new(line_i, col_i, String::from('=')),
+                        });
+                        char = chars.next();
+                        col_i += 1;
                     }
                     Some(curr_char) if curr_char.is_whitespace() => {
                         char = chars.next();
