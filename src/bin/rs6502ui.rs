@@ -79,7 +79,15 @@ fn page_widget(memory: &dyn Memory, curr_page: u8, ab: u16, pc: u16) -> Column<'
         for l in 0x00..0x10 {
             let add = (h * 0x10) + l + ((curr_page as u16) * 0x0100);
             let mut container = container(text(format!("{:02x}", memory.get(add))));
-            if add == ab {
+            if add == pc {
+                if pc == ab {
+                    container = container
+                        .style(|_| container::background(Color::from_rgba8(255, 150, 255, 1.0)))
+                } else {
+                    container = container
+                        .style(|_| container::background(Color::from_rgba8(200, 255, 200, 1.0)))
+                }
+            } else if add == ab {
                 container = container
                     .style(|_| container::background(Color::from_rgba8(255, 255, 150, 1.0)))
             }

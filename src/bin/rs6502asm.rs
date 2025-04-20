@@ -1,10 +1,18 @@
 use std::io;
+use std::env;
+use std::fs;
 
 use rs6502::asm::assemble;
 
 fn main() -> io::Result<()> {
-    let stdin = io::stdin();
-    let lines: Vec<String> = stdin.lines().map(|l| l.unwrap()).collect();
+    let args: Vec<String> = env::args().collect();
+    let lines: Vec<String> = if args.len() < 2 {
+        let stdin = io::stdin();
+        stdin.lines().map(|l| l.unwrap()).collect()
+    } else {
+        let file_name = &args[1];
+        fs::read_to_string(file_name).expect("Invalid file").lines().map(|v| v.to_string()).collect()
+    };
     let res = assemble(lines);
 
     for high in 0x000..=0xFFF {

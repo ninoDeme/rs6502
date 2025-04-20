@@ -64,12 +64,12 @@ impl Registers {
 #[derive(Clone)]
 pub struct TimingState {
     t0: bool,
+    t1: bool,
     tp: bool,
     t2: bool,
     t3: bool,
     t4: bool,
     t5: bool,
-    t1: bool,
     t6: bool,
     v0: bool,
     sd1: bool,
@@ -80,12 +80,12 @@ impl TimingState {
     pub fn new() -> TimingState {
         TimingState {
             t0: true,
+            t1: false,
             tp: false,
             t2: false,
             t3: false,
             t4: false,
             t5: false,
-            t1: false,
             t6: false,
             v0: false,
             sd1: false,
@@ -96,12 +96,12 @@ impl TimingState {
     pub fn clear() -> TimingState {
         TimingState {
             t0: false,
+            t1: false,
             tp: false,
             t2: false,
             t3: false,
             t4: false,
             t5: false,
-            t1: false,
             t6: false,
             v0: false,
             sd1: false,
@@ -270,7 +270,7 @@ fn step1(state: &mut State) {
     state.timing = state.next_timing.clone();
     state.next_timing = TimingState::clear();
 
-    state.rw = false;
+    state.rw = true;
     if state.timing.t2 {
         if state.irq || state.nmi {
             state.next_timing = TimingState::clear();
@@ -286,8 +286,7 @@ fn step1(state: &mut State) {
     let InstructionInfo {
         instruction,
         mode,
-        cycles,
-        extra_cycles,
+        ..
     } = Instruct::from_op_code(op_code).unwrap();
     match mode {
         AddressType::Impl => match instruction {
@@ -342,7 +341,7 @@ fn step1(state: &mut State) {
                     if state.timing.t2 {
                         state.ab = state.registers.pc + 1;
                         state.db = state.registers.ac;
-                        state.rw = true;
+                        state.rw = false;
                     };
                 }
                 _ => unimplemented!(),
@@ -362,8 +361,7 @@ fn step2(state: &mut State) {
     let InstructionInfo {
         instruction,
         mode,
-        cycles,
-        extra_cycles,
+        ..
     } = Instruct::from_op_code(op_code).unwrap();
     match mode {
         AddressType::Impl => match instruction {
@@ -399,7 +397,7 @@ fn step2(state: &mut State) {
         AddressType::ZeroPage => {
             match instruction {
                 Instruct::ADC => {
-                    if state.timing.t3 {
+                    if state.timing.t2 {
                         ins_adc(state);
                         state.next_timing.t0 = true;
                     };
@@ -413,19 +411,16 @@ fn step2(state: &mut State) {
 
     if state.timing.t1 {
         let op_code = state.pd;
-        let InstructionInfo {
-            instruction,
-            mode,
-            cycles,
-            extra_cycles,
-        } = Instruct::from_op_code(op_code).unwrap();
+        let next_instruct = Instruct::from_op_code(op_code).unwrap();
         state.next_timing = TimingState::clear();
         state.next_timing.t2 = true;
-        if cycles == 2 {
+        if next_instruct.cycles == 2 {
             state.next_timing.t0 = true;
         }
-    } else if !state.next_timing.t0 {
-        if state.timing.t2 {
+    } else {
+        if state.timing.t0 {
+            state.next_timing.t1 = true;
+        } else if state.timing.t2 {
             state.next_timing.t3 = true;
         } else if state.timing.t3 {
             state.next_timing.t4 = true;
@@ -436,8 +431,6 @@ fn step2(state: &mut State) {
         } else if state.timing.t6 {
             // if the timing is not set manually by the instruction by this point the processor
             // will enter an infinite loop, maybe add warning or loop detection here
-        } else if state.timing.t0 {
-            state.next_timing.t1 = true;
         }
     };
 }

@@ -46,6 +46,22 @@ enum PState {
     Default,
     PostIntruction(Symbol, Instruct),
     PostNumber(Symbol, Instruct, Value),
+    PostDirective(Symbol, Directive),
+}
+
+enum Directive {
+    ORG,
+    BYTES
+}
+
+impl Directive {
+    pub fn from_str(val: &str) -> Option<Directive> {
+        match val {
+            "ORG" => Some(Directive::ORG),
+            "BYTES" => Some(Directive::BYTES),
+            _ => None
+        }
+    }
 }
 
 fn is_keyword(text: &str) -> bool {
@@ -184,6 +200,8 @@ pub fn parse(tokens: Vec<Token>) -> Result<BTreeMap<u16, u8>, AsmError> {
 
     let mut instructions: Vec<InterOpCode> = vec![];
 
+    let mut result: BTreeMap<u16, u8> = BTreeMap::new();
+
     let mut ins_addr = 0x0600;
     loop {
         match state {
@@ -210,7 +228,22 @@ pub fn parse(tokens: Vec<Token>) -> Result<BTreeMap<u16, u8>, AsmError> {
                             state = PState::Default;
                         }
                         TokenType::Dot => {
-                            unimplemented!()
+                            let token = throw_newline(tokens.next())?;
+                            if token.token == TokenType::Identifier {
+                                if let Some(dir) = Directive::from_str(token.symbol.text.as_str()) {
+                                    state = PState::PostDirective(token.symbol, dir);
+                                } else {
+                                    return Err(AsmError::new(
+                                        "Unknown directive",
+                                        Some(token.symbol),
+                                    ));
+                                }
+                            } else {
+                                return Err(AsmError::new(
+                                    "Expected directive name",
+                                    Some(token.symbol),
+                                ));
+                            }
                         }
                         _ => return Err(AsmError::new("Invalid token", Some(token.symbol))),
                     }
@@ -474,13 +507,71 @@ pub fn parse(tokens: Vec<Token>) -> Result<BTreeMap<u16, u8>, AsmError> {
                     }
                 }
                 state = PState::Default;
+            },
+            PState::PostDirective(_dir_symbol, dir) => {
+                match dir {
+                    Directive::ORG => {
+                        tokens.next_if(|t| t.token == TokenType::Equals);
+                        let mut token = throw_newline(tokens.next())?;
+                        let radix = match token.token {
+                            TokenType::Bin => {
+                                token = throw_newline(tokens.next())?;
+                                Radix::Bin
+                            }
+                            TokenType::Oct => {
+                                token = throw_newline(tokens.next())?;
+                                Radix::Oct
+                            }
+                            TokenType::Hex => {
+                                token = throw_newline(tokens.next())?;
+                                Radix::Hex
+                            }
+                            TokenType::Number => Radix::Dec,
+                            _ => unreachable!(),
+                        };
+
+                        let value = parse_number(token, radix)?;
+
+                        ins_addr = value.value as u16;
+                        state = PState::Default;
+                    },
+                    Directive::BYTES => {
+                        while let Some(curr_token) = tokens.next() {
+                            if curr_token.token == TokenType::Number {
+                                let value = match i32::from_str_radix(curr_token.symbol.text.as_str(), 16) {
+                                    Ok(res) => res,
+                                    Err(_) => {
+                                        return Err(AsmError::new(
+                                            format!("{} is not a valid number", curr_token.symbol.text).as_str(),
+                                            Some(curr_token.symbol),
+                                        ))
+                                    }
+                                };
+                                if value > 255 {
+                                    return Err(AsmError::new(
+                                        format!("{} is not a valid number", curr_token.symbol.text).as_str(),
+                                        Some(curr_token.symbol)
+                                    ))
+                                }
+
+                                result.insert(ins_addr, value as u8);
+                                ins_addr += 1;
+                            };
+
+                            if curr_token.token == TokenType::NewLine {
+                                if !tokens.peek().is_some_and(|t| t.token == TokenType::Number) {
+                                    break;
+                                };
+                            }
+                        }
+                        state = PState::Default;
+                    }
+                }
             }
         }
     }
 
     // print_instructions(&instructions);
-
-    let mut result: BTreeMap<u16, u8> = BTreeMap::new();
     for op in instructions.into_iter() {
         match op.addr {
             InterAddr::Label(label) => {
