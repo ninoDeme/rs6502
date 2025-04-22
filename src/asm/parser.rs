@@ -98,7 +98,7 @@ fn parse_number(token: Token, radix: Radix) -> Result<Value, AsmError> {
         Ok(res) => res,
         Err(_) => {
             return Err(AsmError::new(
-                format!("{} is not a valid number", token.symbol.text).as_str(),
+                format!("can't parse '{}' as number", token.symbol.text).as_str(),
                 Some(token.symbol),
             ))
         }
@@ -537,31 +537,49 @@ pub fn parse(tokens: Vec<Token>) -> Result<BTreeMap<u16, u8>, AsmError> {
                     },
                     Directive::BYTES => {
                         while let Some(curr_token) = tokens.next() {
-                            if curr_token.token == TokenType::Number {
-                                let value = match i32::from_str_radix(curr_token.symbol.text.as_str(), 16) {
-                                    Ok(res) => res,
-                                    Err(_) => {
+                            match curr_token.token {
+                                TokenType::Number | TokenType::Bin | TokenType::Oct | TokenType::Hex => {
+                                    let mut token = curr_token;
+                                    let radix = match token.token {
+                                        TokenType::Bin => {
+                                            token = throw_newline(tokens.next())?;
+                                            Radix::Bin
+                                        }
+                                        TokenType::Oct => {
+                                            token = throw_newline(tokens.next())?;
+                                            Radix::Oct
+                                        }
+                                        TokenType::Hex => {
+                                            token = throw_newline(tokens.next())?;
+                                            Radix::Hex
+                                        }
+                                        TokenType::Number => Radix::Dec,
+                                        _ => unreachable!(),
+                                    };
+                                    let value = parse_number(token, radix)?;
+                                    if value.long {
                                         return Err(AsmError::new(
-                                            format!("{} is not a valid number", curr_token.symbol.text).as_str(),
-                                            Some(curr_token.symbol),
+                                            format!("{} is not u8", value.symbol.text).as_str(),
+                                            Some(value.symbol)
                                         ))
                                     }
-                                };
-                                if value > 255 {
+
+                                    result.insert(ins_addr, value.value as u8);
+                                    ins_addr += 1;
+                                },
+                                TokenType::NewLine => {
+                                    if let Some(Token {token: TokenType::Number | TokenType::Bin | TokenType::Oct | TokenType::Hex, ..}) = tokens.peek() {
+                                        continue;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                _ => {
                                     return Err(AsmError::new(
                                         format!("{} is not a valid number", curr_token.symbol.text).as_str(),
                                         Some(curr_token.symbol)
                                     ))
                                 }
-
-                                result.insert(ins_addr, value as u8);
-                                ins_addr += 1;
-                            };
-
-                            if curr_token.token == TokenType::NewLine {
-                                if !tokens.peek().is_some_and(|t| t.token == TokenType::Number) {
-                                    break;
-                                };
                             }
                         }
                         state = PState::Default;

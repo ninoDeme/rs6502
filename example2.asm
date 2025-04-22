@@ -1,5 +1,5 @@
 .ORG $FFFC
-.BYTES 00 06
+.BYTES $00 $06
 
 .ORG $0600
 adc #$55
