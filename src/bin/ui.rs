@@ -5,6 +5,7 @@ use iced::Color;
 use rs6502::asm::{assemble, read_lines};
 use rs6502::m6502::{step, State};
 use rs6502::memory::{DefaultMemory, Memory};
+use rs6502::instruct::Instruct;
 
 use std::rc::Rc;
 
@@ -251,6 +252,13 @@ impl Machine {
                     input
                         .clone()
                         .map(|state| text(format!("{:02x}", state.registers.sp)).into())
+                )
+                .spacing(VERT_SPACING),
+            column![text("Ins")]
+                .extend(
+                    input
+                        .clone()
+                        .map(|state| text(Instruct::from_op_code(state.ir).map_or("", |i| i.instruction.to_str())).into())
                 )
                 .spacing(VERT_SPACING),
             column![text("State")]

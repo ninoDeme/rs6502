@@ -287,6 +287,9 @@ fn step1(state: &mut State) {
         mode,
         ..
     } = Instruct::from_op_code(op_code).unwrap();
+    if state.timing.t2 {
+        // state.registers.pc += 1;
+    }
     match mode {
         AddressType::Impl => match instruction {
             Instruct::BRK => {
@@ -303,10 +306,11 @@ fn step1(state: &mut State) {
             match instruction {
                 _ => {
                     if state.timing.t2 {
-                        state.ab = state.registers.pc + 1;
+                        state.registers.pc += 1;
+                        state.ab = state.registers.pc;
                     };
                     if state.timing.t1 {
-                        state.registers.pc = state.registers.pc + 2;
+                        state.registers.pc += 1;
                     };
                 },
             };
@@ -315,29 +319,45 @@ fn step1(state: &mut State) {
             match instruction {
                 Instruct::STA => {
                     if state.timing.t2 {
-                        state.ab = state.registers.pc + 1;
+                        state.registers.pc += 1;
+                        state.ab = state.registers.pc;
                     };
                     if state.timing.t0 {
+                        state.registers.pc += 1;
                         state.ab = state.pd as u16;
                         state.rw = false;
                         state.db = state.registers.ac;
                     }
-                    if state.timing.t1 {
-                        state.registers.pc = state.registers.pc + 2;
-                    };
                 }
                 _ => {
                     if state.timing.t2 {
-                        state.ab = state.registers.pc + 1;
+                        state.registers.pc += 1;
+                        state.ab = state.registers.pc;
                     };
                     if state.timing.t0 {
+                        state.registers.pc += 1;
                         state.ab = state.pd as u16;
-                    };
-                    if state.timing.t1 {
-                        state.registers.pc = state.registers.pc + 2;
                     };
                 },
             };
+        }
+        AddressType::ZeroPageX => {
+            match instruction => {
+                Instruct::ADC => {
+                    if state.timing.t2 {
+                        state.registers.pc += 1;
+                        state.ab = state.registers.pc;
+                    };
+                    if state.timing.t3 {
+                        state.registers.pc += 1;
+                        state.ab = state.pd as u16;
+                    }
+                    if state.timing.t0 {
+                        state.ab = (state.pd + state.registers.x) as u16;
+                    }
+                }
+                _ => unimplemented!()
+            }
         }
         _ => unimplemented!(),
     };
@@ -407,6 +427,19 @@ fn step2(state: &mut State) {
                 }
                 _ => unimplemented!(),
             };
+        },
+        AddressType::ZeroPageX => {
+            match instruction {
+                Instruct::ADC => {
+                    if state.timing.t3 {
+                        state.next_timing.t0 = true;
+                    }
+                    if state.timing.t0 {
+                        ins_adc(state);
+                    }
+                }
+                _ => unimplemented!()
+            }
         }
         _ => unimplemented!(),
     };
@@ -419,7 +452,7 @@ fn step2(state: &mut State) {
         if next_instruct.cycles == 2 {
             state.next_timing.t0 = true;
         }
-    } else {
+    } else if !state.next_timing.t0 {
         if state.timing.t0 {
             state.next_timing.t1 = true;
         } else if state.timing.t2 {

@@ -17,16 +17,6 @@ struct InterOpCode {
     addr: InterAddr,
 }
 
-// pub fn get_op(instruction: &str, addressing: AddressType) -> OpCode { match instruction.to_uppercase().as_str() {
-//         "ADC" => {
-//
-//         },
-//         _ => {
-//             panic!("Invalid instruction: {instruction}")
-//         }
-//     }
-// }
-
 #[derive(Debug)]
 pub enum Radix {
     Hex,
