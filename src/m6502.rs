@@ -267,8 +267,7 @@ pub fn step(state: &mut State) {
 }
 
 fn step1(state: &mut State) {
-    state.timing = state.next_timing.clone();
-    state.next_timing = TimingState::clear();
+    state.timing = std::mem::replace(&mut state.next_timing, TimingState::clear());
 
     state.rw = true;
     if state.timing.t2 {
@@ -302,49 +301,42 @@ fn step1(state: &mut State) {
         },
         AddressType::Immediate => {
             match instruction {
-                Instruct::ADC => {
-                    if state.timing.t1 {
-                        state.registers.pc = state.registers.pc + 2;
-                    };
+                _ => {
                     if state.timing.t2 {
                         state.ab = state.registers.pc + 1;
                     };
-                }
-                _ => unimplemented!(),
+                    if state.timing.t1 {
+                        state.registers.pc = state.registers.pc + 2;
+                    };
+                },
             };
         }
         AddressType::ZeroPage => {
             match instruction {
-                Instruct::ADC => {
+                Instruct::STA => {
                     if state.timing.t2 {
                         state.ab = state.registers.pc + 1;
                     };
-                    if state.timing.t3 {
+                    if state.timing.t0 {
+                        state.ab = state.pd as u16;
+                        state.rw = false;
+                        state.db = state.registers.ac;
+                    }
+                    if state.timing.t1 {
+                        state.registers.pc = state.registers.pc + 2;
+                    };
+                }
+                _ => {
+                    if state.timing.t2 {
+                        state.ab = state.registers.pc + 1;
+                    };
+                    if state.timing.t0 {
                         state.ab = state.pd as u16;
                     };
                     if state.timing.t1 {
                         state.registers.pc = state.registers.pc + 2;
                     };
-                }
-                Instruct::LDA => {
-                    if state.timing.t1 {
-                        state.registers.pc = state.registers.pc + 2;
-                    };
-                    if state.timing.t2 {
-                        state.ab = state.registers.pc + 1;
-                    };
-                }
-                Instruct::STA => {
-                    if state.timing.t1 {
-                        state.registers.pc = state.registers.pc + 2;
-                    };
-                    if state.timing.t2 {
-                        state.ab = state.registers.pc + 1;
-                        state.db = state.registers.ac;
-                        state.rw = false;
-                    };
-                }
-                _ => unimplemented!(),
+                },
             };
         }
         _ => unimplemented!(),
@@ -401,8 +393,18 @@ fn step2(state: &mut State) {
                         ins_adc(state);
                         state.next_timing.t0 = true;
                     };
+                },
+                Instruct::LDA => {
+                    if state.timing.t2 {
+                        state.registers.ac = state.pd;
+                        state.next_timing.t0 = true;
+                    };
                 }
-                Instruct::STA => {}
+                Instruct::STA => {
+                    if state.timing.t2 {
+                        state.next_timing.t0 = true;
+                    }
+                }
                 _ => unimplemented!(),
             };
         }
@@ -430,7 +432,7 @@ fn step2(state: &mut State) {
             state.next_timing.t6 = true;
         } else if state.timing.t6 {
             // if the timing is not set manually by the instruction by this point the processor
-            // will enter an infinite loop, maybe add warning or loop detection here
+            // will enter an infinite loop, maybe add a warning or loop detection here
         }
     };
 }

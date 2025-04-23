@@ -9,7 +9,7 @@ use rs6502::memory::{DefaultMemory, Memory};
 use std::rc::Rc;
 
 pub fn main() -> iced::Result {
-    iced::run("Emultator", Machine::update, Machine::view)
+    iced::run("Emulator", Machine::update, Machine::view)
 }
 
 struct Machine {
@@ -114,29 +114,29 @@ impl Machine {
         match message {
             Message::HalfStep => {
                 if self.state.clock1 {
-                    self.last_states.push(self.state.clone().into());
+                    self.last_states.push(Rc::new(self.state.clone()));
                     step(&mut self.state)
                 } else {
+                    self.last_states.push(Rc::new(self.state.clone()));
                     if self.state.rw {
                         self.state.db = self.memory.get(self.state.ab);
                     } else {
                         self.memory.set(self.state.ab, self.state.db);
                     }
-                    self.last_states.push(self.state.clone().into());
                     step(&mut self.state);
                 }
             }
             Message::Step => {
-                self.last_states.push(self.state.clone().into());
+                self.last_states.push(Rc::new(self.state.clone()));
                 if self.state.clock1 {
                     step(&mut self.state)
                 }
+                self.last_states.push(Rc::new(self.state.clone()));
                 if self.state.rw {
                     self.state.db = self.memory.get(self.state.ab);
                 } else {
                     self.memory.set(self.state.ab, self.state.db);
                 }
-                self.last_states.push(self.state.clone().into());
                 step(&mut self.state);
             }
             Message::ClearStates => {

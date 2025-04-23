@@ -30,6 +30,3 @@ fn main() -> io::Result<()> {
     println!("{state:?}");
     Ok(())
 }
-
-//
-// fn adc()
